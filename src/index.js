@@ -3,7 +3,7 @@ import * as math from 'mathjs';
 import * as  Vec2D from 'victor';
 // -- // 
 
-import * as main from './mainV2.js'; // ** 1 ** 
+// import * as main from './mainV2.js'; // ** 1 ** 
 
 
 // test using flubber for shape morphig -- // 
