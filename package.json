@@ -1,0 +1,35 @@
+{
+  "name": "webpack_basic_template",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack serve --mode development",
+    "build": "webpack --mode production"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.21.0",
+    "@babel/preset-env": "^7.20.2",
+    "@babel/preset-react": "^7.18.6",
+    "babel-loader": "^9.1.2",
+    "csv-loader": "^3.0.5",
+    "html-loader": "^4.2.0",
+    "html-webpack-plugin": "^5.5.0",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1",
+    "webpack-dev-server": "^4.11.1"
+  },
+  "dependencies": {
+    "d3": "^7.8.0",
+    "d3-sankey": "^0.12.3",
+    "express": "^4.18.2",
+    "flubber": "^0.4.2",
+    "mathjs": "^11.5.0",
+    "netclustering": "^0.0.7",
+    "victor": "^1.1.0"
+  }
+}
