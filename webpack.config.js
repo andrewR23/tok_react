@@ -4,37 +4,31 @@ const path = require('path');
 module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
-    hash: true,
-    title: 'Webpack Template App',
-    header: 'Webpack Example Title',
-    metaDesc: 'Webpack Example Description',
-    template: './src/index.html',
-    filename: './index.html',
-    inject: 'body'
-  })
+      hash: true,
+      title: 'Webpack Template App',
+      header: 'Webpack Example Title',
+      metaDesc: 'Webpack Example Description',
+      template: './src/index.html',
+      filename: './index.html',
+      inject: 'body',
+    }),
   ],
 
-  mode: 'development',  
+  mode: 'development',
 
   entry: {
-      index: './src/index.js',
-     // -- mod1:  './src/module_1.js', -- //
+    index: './src/index.js',
   },
 
   output: {
     filename: 'index.js',
-    // -- filename: '[name].bundle.js', -- // 
     path: path.resolve(__dirname, 'dist'),
     clean: true,
-   },
+  },
 
-  // devServer: {
-  //   static: './',
-  //   compress: true,
-  //   port: 8080,
-  // },
-  
- module: {
+  devServer: {},
+
+  module: {
     rules: [
       {
         test: /\.css$/i,
@@ -55,14 +49,21 @@ module.exports = {
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        use: { loader: "babel-loader"}
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-react'],
+          },
+        },
       },
       {
         test: /\.html$/,
-        use:['html-loader'],
-
-      }
-     
+        use: ['html-loader'],
+      },
     ],
+  },
+
+  resolve: {
+    extensions: ['.js', '.jsx'],
   },
 };

@@ -1,168 +1,18 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Tok Graph test </title>
-      <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="description" content="<%= htmlWebpackPlugin.options.metaDesc %>" />
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React AppV2</title>
+    <!-- <link rel="stylesheet" href="./styles.css"> -->
+</head>
+<body>
+  <div id="root"></div>
 
-    <style>
+  <!-- <script src="./dist/bundle.js"></script> -->
 
-        div.nodegroup { 
-          transform: translateX(300px);
-         }
-
-        div.tooltip {   
-            position:absolute;         
-            text-align: left;         
-            width: 160px;                    
-            height: 60px;                   
-            padding: 5px;               
-            font: 12px sans-serif;      
-            background: gray; 
-            border: 0px;        
-            border-radius: 0px;         
-            pointer-events: none;
-        }
-
-        div.menuitems { 
-            position: absolute;         
-            text-align: left;         
-            width: 250px;                    
-            height: 100px;                   
-            padding: 5px;               
-            font: 12px sans-serif;      
-            border: 0px;        
-            border-radius: 0px;   
-            left: 90%;      
-            top: 100px;
-            transform: scale(0.8) translate(-100px, 0px);
-         }
-
-        /*---------------*/
-
-         #tooltip {
-            background-color: rgba(100, 100, 120, 0.4);
-            font: 12px sans-serif;
-            color: darkslategray;
-            border-radius: 4px;
-            padding: 8px;
-            width: 10 0px;                    
-            height: 18px;    
-            transform: rotate(-45deg);     
-        }
-
-          /*---------------*/
-          #makerTable {
-            width: 100%;
-          }
-          /* Define the height and font properties for table rows */
-          #makerTable tr {
-            height: 18px; /* Adjust the height as needed */
-            font: 12px sans-serif; /* Adjust the font size as needed */
-            color: darkslategray;
-          }
-
-          /* Apply alternating background colors to table rows */
-          #makerTable tr:nth-child(even) {
-            background-color: #f2f2f2; /* Set the desired background color */
-          }
-
-          /* Define the width of each table cell */
-          #makerTable th,
-          td {
-              padding: 4px;
-          }
-
-          #makerTable th {
-              text-align: left;
-              font: 11px sans-serif; 
-              text-transform: uppercase; 
-              color: DarkSlateGray;
-          }
-
-          .table-highlight {
-              background-color: pink;
-          }
-
-          .table-container {
-              height: 250px; /* Adjust the height as needed */
-              overflow-y: scroll;
-          }
-          /*---------------*/
-          .block-heading { 
-              font: 20px sans-serif; 
-              text-transform: uppercase; 
-              fill: DarkSlateGray;
-           }
-           .breadcrumbs { 
-              font: 25px sans-serif; 
-              text-transform: uppercase;
-              fill: orangered;
-           }
-          /*---------------*/
-
-
-        
-    </style>
-
-
-  </head>
-  <body>
-
-      <div id="text"> </div>
-
-          
-      <div style="position: relative">
-          <svg id='frame' width="2000" height="700"></svg>
-          <div id="tooltip" style="position: absolute; pointer-events: none;"></div>
-      </div>
-   
-
-       <div class="table-container">
-        <table id="makerTable">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Location</th>
-              <th>Guild</th>
-              <th>Known Instruments</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Table rows will be dynamically populated here -->
-          </tbody>
-          </table>
-      </div>
-      <!-- <svg id='frame' width="800" height="600"> </svg> -->
-
-
-      <div class="menuitems" style= 'background-color: rgba(255, 255, 255, 0.5);  height: 400px;'>
-
-          <div class="slidecontainer">
-              <input type="range" min="1690" max="1990" value="1930" class="slider" id="dateSlider">
-              <p>Year: (+- 50) <span id="dateSlider_output"></span></p>
-              </br>
-              <input type="range" min="400" max="1200" value="800" class="slider" id="dateRangeSlider">
-              <p>Date Y pos: <span id="dateRange_output"></span></p>
-              <button  id="arrowBtn" style="position: absolute; top: 340px; left: 10px;">Toggle Layout View</button>
-
-          </div>
-
-
-          <div class='buttoncontainer' >
-              </br>
-              </br>
-              <!-- <button type="button" id="centre_cluster">cluster centre</button>  -->
-              <button type="button" id="dateBtn">date view</button> 
-              <button type="button" id="groupBtn">groupview</button> 
-              <!-- <button type="button" id="toggleBtn">toggle</button>  -->
-
-          </div>
-
-      </div>
-
-
-  </body>
+  <div>
+    <svg id='frame' width="2000" height="700"></svg>
+  </div>
+</body>
 </html>
-
