@@ -866,26 +866,41 @@ function calcGridPos (d, i) {
       const childgroup = group.selectAll(".child");
       const childcircles = group.selectAll('.child circle')
 
-      childcircles.each (function (c, i) { 
-         const circle = d3.select(this);
-         circle.attr('fill', 'black')
-         circle.attr('opacity', 0.1)
-      })
-
-
+      // -- 1. get  selected -- // 
       childgroup.each(function(c, i) { 
           const group = d3.select(this);
-          console.log ('c ', group)
+          //console.log ('c ', group)
           // Log attribute value
-          console.log("Attribute value transform:", group.attr("transform"));
+          //console.log("Attribute value transform:", group.attr("transform"));
           //group.attr("x", 500);
            // Log style value
-          console.log("Style value transform:", group.style("transform"));
+          //console.log("Style value transform:", group.style("transform"));
          // child.style("styleName", "newValue");
 
           // log style value
+      })
+      // 
+      childcircles.each (function (c, i) { 
+         const circle = d3.select(this);
+         circle.attr('fill', 'red')
+         circle.attr('opacity', 1)
+      })
+
+      // 2. get everything -- and c
+      const allcircles = d3.selectAll('.grpLarge .child circle')
+      console.log ("all circles =", allcircles)
+      
+      allcircles.each (function (c, i){ 
+          const circle = d3.select (this)
+          console.log ('a circle ', circle)
+          circle.attr('fill', 'black')
+          circle.attr('opacity', 0.1)
 
       })
+
+
+
+
       // get all child nodes.. 
 
       // select(this).selectAll('.child').each (function (child, i) { 
