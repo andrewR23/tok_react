@@ -858,8 +858,8 @@ function calcGridPos (d, i) {
   // -- fade out all elements -- (non selected )-- (also de-scale ?? )
 
   function fadeGroups(selected) { 
-      console.log ("fade group")
-
+      console.log ("fade group ", selected); 
+      // -- not working online... 
       groupLrg.each(function (group) { 
           // -- items NOT selected -- // 
         if (this !== selected) {
