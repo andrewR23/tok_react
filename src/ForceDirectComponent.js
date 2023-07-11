@@ -813,10 +813,10 @@ function calcGridPos (d, i) {
 
   // -- movement and scale .. move the entire group... 
   function scaleAndMoveGroup (group) { 
-      console.log ("item is clicked: scale and move the group... ")
+      //console.log ("item is clicked: scale and move the group... ")
 
-      console.log (d3.select (group))
-      console.log (group.getAttribute('gx'))
+      //console.log (d3.select (group))
+      //console.log (group.getAttribute('gx'))
 
       //selectedGroup = this;
 
@@ -918,9 +918,9 @@ function calcGridPos (d, i) {
       selectedGroup.current= this; 
 
       // -- OTHER THINGS -- // 
-     scaleAndMoveGroup(selectedGroup.current); // move all based on group click -- // 
-     fadeGroups (selectedGroup.current)
-     event.stopPropagation(); // prevent window click --
+     //scaleAndMoveGroup(selectedGroup.current); // move all based on group click -- // 
+    // fadeGroups (selectedGroup.current)
+     //event.stopPropagation(); // prevent window click --
 
 
       // -- do something with selection -- // 
@@ -1177,7 +1177,7 @@ function calcGridPos (d, i) {
   // ---------------------------- // 
   
   function handleClickedWindow(event) {
-    console.log ("window is clicked ")
+    //console.log ("window is clicked ")
 
     //console.log (selectedGroup)
    // if (selectedGroup != null) selectedGroup.curve = 0; 
