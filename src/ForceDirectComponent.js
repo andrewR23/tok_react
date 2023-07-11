@@ -858,6 +858,7 @@ function calcGridPos (d, i) {
   // -- fade out all elements -- (non selected )-- (also de-scale ?? )
 
   function fadeGroups(selected) { 
+      console.log ("fade group")
 
       groupLrg.each(function (group) { 
           // -- items NOT selected -- // 
@@ -923,7 +924,7 @@ function calcGridPos (d, i) {
 
       // -- OTHER THINGS -- // 
      scaleAndMoveGroup(selectedGroup.current); // move all based on group click -- // 
-     fadeGroups (selectedGroup.current)
+     fadeGroups (selectedGroup.current) // THIS DOES NOT WORK 
      event.stopPropagation(); // prevent window click --
 
 
