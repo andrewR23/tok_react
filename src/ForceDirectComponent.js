@@ -858,43 +858,73 @@ function calcGridPos (d, i) {
   // -- fade out all elements -- (non selected )-- (also de-scale ?? )
 
   function fadeGroups(selected) { 
-      console.log ("fade group ", selected); 
-      console.log ('this group ', select(this))
-      console.log ('childs ', select(this).selectAll('.child')) // the groups -- // 
+      // console.log ("fade group ", selected); 
+      // console.log ('this group ', select(this))
+      // console.log ('childs ', select(this).selectAll('.child')) // the groups -- // 
 
-      const group = d3.select(selected)
-      const childgroup = group.selectAll(".child");
-      const childcircles = group.selectAll('.child circle')
+      // const group = d3.select(selected)
+      // const childgroup = group.selectAll(".child");
+      // const childcircles = group.selectAll('.child circle')
 
-      // -- 1. get  selected -- // 
-      childgroup.each(function(c, i) { 
-          const group = d3.select(this);
-          //console.log ('c ', group)
-          // Log attribute value
-          //console.log("Attribute value transform:", group.attr("transform"));
-          //group.attr("x", 500);
-           // Log style value
-          //console.log("Style value transform:", group.style("transform"));
-         // child.style("styleName", "newValue");
+      // // -- 1. get  selected -- // 
+      // childcircles.each (function (c, i) { 
+      //    const circle = d3.select(this);
+      //    //circle.attr('fill', 'red')
+      //    //circle.attr('opacity', 1)
+      // })
 
-          // log style value
-      })
-      // 
-      childcircles.each (function (c, i) { 
-         const circle = d3.select(this);
-         circle.attr('fill', 'red')
-         circle.attr('opacity', 1)
-      })
-
-      // 2. get everything -- and c
-      const allcircles = d3.selectAll('.grpLarge .child circle')
-      console.log ("all circles =", allcircles)
+      // // -- 2. get everything -- and change opacity
+      // const allcircles = d3.selectAll('.grpLarge .child circle')
+      // console.log ("all circles =", allcircles)
       
-      allcircles.each (function (c, i){ 
-          const circle = d3.select (this)
-          console.log ('a circle ', circle)
-          circle.attr('fill', 'black')
-          circle.attr('opacity', 0.1)
+      // allcircles.each (function (c, i){ 
+      //     const circle = d3.select (this)
+      //     console.log ('a circle ', circle)
+      //    // circle.attr('fill', 'black')
+      //    // circle.attr('opacity', 0.1)
+
+      // })
+
+      // -- 3. get everything EXCEPT selected. 
+      const allgroups = d3.selectAll ('.grpLarge')
+
+      allgroups.each (function (g,i){ 
+
+          // -- get all the circles and paths inside the  group 
+          let circles = d3.select (this).selectAll ('.child circle');
+          let paths = d3.select (this).selectAll ('.childlinkGrp path');
+          let text = d3.select (this).selectAll ('.child text');
+
+          if (this != selected) { 
+              //-- if NOT selected
+              circles.each (function (c,i){ 
+                  let circle = d3.select(this).attr('opacity', 0.1)
+              })
+
+              paths.each (function (p, i){ 
+                  let path = d3.select(this).attr('opacity', 0.1)
+              })
+
+              text.each (function (p, i){ 
+                  let text = d3.select(this).style('visibility', 'hidden')
+              })
+
+
+        } else { 
+              // -- if IS selected
+              circles.each (function (c,i){ 
+                  let circle = d3.select(this).attr('opacity', 1.0)
+              })
+
+              paths.each (function (p, i){ 
+                  let path = d3.select(this).attr('opacity', 1.0)
+              })
+
+              text.each (function (p, i){ 
+                  let text = d3.select(this).style('visibility', 'visible')
+              })
+
+        }
 
       })
 
