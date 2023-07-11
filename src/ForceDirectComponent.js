@@ -941,7 +941,7 @@ function calcGridPos (d, i) {
        // circles.each (function (c,i){ 
        //            let circle = d3.select(this).attr('opacity', 0.1)
        //        })
-      const largeCircle = select(this).selectAll ('.largeCircle').attr('cx', 100).attr('cy', 100).attr('opacity', 0.5).attr('r', 200) 
+      //const largeCircle = select(this).selectAll ('.largeCircle').attr('cx', 100).attr('cy', 100).attr('opacity', 0.5).attr('r', 200) 
 
       //largeCircle.attr('r', 500)
       // -- SPREAD NODES TO NEW POSITIONS -- // 
