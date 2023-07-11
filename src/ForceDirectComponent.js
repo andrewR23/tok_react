@@ -916,8 +916,8 @@ function calcGridPos (d, i) {
   // -- do something with the clicked group -- //
 
   function handleClickedGroup ( ) { 
-      //console.log ("group is clicked...")
-       //console.log (this)
+      console.log ("group is clicked...")
+       console.log (this)
 
       selectedGroup.current= this; 
 
