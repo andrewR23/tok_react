@@ -591,7 +591,7 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
                   if (d.nodes.length > 0) {
                       //d.nodes = d.nodes.sort((a, b) => a.date_1 - b.date_1); // -- not needed if sorted elsewhere -- // --
                       // -- set the baseY for the group -- 
-                      d.baseY = dateScaleRef.current(d.nodes[0].date_1); // -- earliest year -- // 
+                      d.baseY = 100; // dateScaleRef.current(d.nodes[0].date_1); // -- earliest year -- // 
                   }
                   let xpos = i *xspacing + 100;
                  return 'translate('+xpos+','+ d.baseY+')'
@@ -923,125 +923,125 @@ function calcGridPos (d, i) {
      event.stopPropagation(); // prevent window click --
 
 
-      // // -- do something with selection -- // 
-      // // -- get all the circles (each inside child group)
-      // const childGroups = select(this).selectAll(".child"); // child nodes (within a group element) -circle + text 
-      // const childLinkGroups = select(this).selectAll(".childlinkGrp");
-      // //const childText = select(this).selectAll('.label')
+      // -- do something with selection -- // 
+      // -- get all the circles (each inside child group)
+      const childGroups = select(this).selectAll(".child"); // child nodes (within a group element) -circle + text 
+      const childLinkGroups = select(this).selectAll(".childlinkGrp");
+      //const childText = select(this).selectAll('.label')
 
-      // // -- SPREAD NODES TO NEW POSITIONS -- // 
-      // // sort into date groups -- 
-      // const groupedElements = [];
-      // let tempArray = [];
-      // let threshold = 15; // date tolerance
-      // // 
-      // childGroups.each (function (g, i) { 
-      // const currentMaker= g
-      // const prevMaker = tempArray[tempArray.length - 1];
-      // // --------- // 
-      // if (!prevMaker || currentMaker.date_1 - prevMaker.date_1 <= threshold) {
-      //         tempArray.push(currentMaker); // add to temp array
-      //     } else {
-      //         groupedElements.push(tempArray); // add temp array to group
-      //         tempArray = [currentMaker]; // start new temp array with current item
-      //     }
-      //     // -------------------------- /// 
-      //     if (i == childGroups.size( )-1) {
-      //         groupedElements.push(tempArray);
-      //     }
-      // })
-      // // --- END OF Grouping --- // 
-      // // -- Sort groups into X positions -- // 
-      // groupedElements.forEach ( group => { 
-      //   // -- apply a sort to the group.. to appy an x value spread -- //
-      //   group.forEach ((item, i) => { 
-      //       item.sortedX = i * 50; // give each a sortedX value spacing
-      //   })
-      // })
+      // -- SPREAD NODES TO NEW POSITIONS -- // 
+      // sort into date groups -- 
+      const groupedElements = [];
+      let tempArray = [];
+      let threshold = 15; // date tolerance
+      // 
+      childGroups.each (function (g, i) { 
+      const currentMaker= g
+      const prevMaker = tempArray[tempArray.length - 1];
+      // --------- // 
+      if (!prevMaker || currentMaker.date_1 - prevMaker.date_1 <= threshold) {
+              tempArray.push(currentMaker); // add to temp array
+          } else {
+              groupedElements.push(tempArray); // add temp array to group
+              tempArray = [currentMaker]; // start new temp array with current item
+          }
+          // -------------------------- /// 
+          if (i == childGroups.size( )-1) {
+              groupedElements.push(tempArray);
+          }
+      })
+      // --- END OF Grouping --- // 
+      // -- Sort groups into X positions -- // 
+      groupedElements.forEach ( group => { 
+        // -- apply a sort to the group.. to appy an x value spread -- //
+        group.forEach ((item, i) => { 
+            item.sortedX = i * 50; // give each a sortedX value spacing
+        })
+      })
 
-      // // -- LABELS make visible -- // 
-      // childGroups.each (function (g, i) { 
-      // //  console.log ("child group label = ", select(this).node( ).firstChild); 
-      //   //select(this).node( ).firstChild.text('new label')
+      // -- LABELS make visible -- // 
+      childGroups.each (function (g, i) { 
+      //  console.log ("child group label = ", select(this).node( ).firstChild); 
+        //select(this).node( ).firstChild.text('new label')
 
-      //   d3.select(this).select('text').style('visibility', 'visible');
-
-
-      // })
-
-      // // -- SPREAD -- // 
-
-      // // -- SET XY of groups (and circle inside) -- //      
-      // childGroups.transition( )
-      //   .duration(1000)
-      //   .tween ('groupmove', groupTween) 
-      //   .attr ('p', function (d) {
-      //     console.log ('this = ', select(this).node( ))
-      //     return 100
-      //   })
-      //   .attr("transform", function (d, i)   { 
-      //           let tx = d.sortedX; //i*40 + d.sortedX; 
-      //           let ty = d.gy 
-      //           let scale = 1.2 
-      //           return `translate(${tx},${ty}) scale(${scale})`;
-      //     }); // move and scale the group (with the circle in it ...)
+        d3.select(this).select('text').style('visibility', 'visible');
 
 
-      // // -- RE-CALCULATE LINES -- // 
-      //   childLinkGroups
-      //       .transition( )
-      //       .duration(1000)
-      //       .tween("position", function() {
+      })
 
-      //               let lines = d3.select(this).node( ).childNodes; 
-      //               console.log (lines, '')
+      // -- SPREAD -- // 
 
-      //               return function(t) {
-
-      //                //console.log ('tweeeeen') // get the source and target transform position.. 
-      //                 // get the movement of the source and target items 
-      //                let linegrp = select(this); 
-      //                let source = linegrp.datum().source; 
-      //                let target = linegrp.datum().target;
-      //               // console.log (source.gx, ' : ', source.gy, " ... ", target.gx, ', ', target.gy);
-      //               let x1 = source.gx; 
-      //               let y1 = source.gy 
-      //               let x2 = target.gx; 
-      //               let y2 = target.gy; 
+      // -- SET XY of groups (and circle inside) -- //      
+      childGroups.transition( )
+        .duration(1000)
+        .tween ('groupmove', groupTween) 
+        .attr ('p', function (d) {
+          console.log ('this = ', select(this).node( ))
+          return 100
+        })
+        .attr("transform", function (d, i)   { 
+                let tx = d.sortedX; //i*40 + d.sortedX; 
+                let ty = d.gy 
+                let scale = 1.2 
+                return `translate(${tx},${ty}) scale(${scale})`;
+          }); // move and scale the group (with the circle in it ...)
 
 
-      //               this.setAttribute('gx1', x1)
-      //               this.setAttribute('gy1', y1)
-      //               this.setAttribute('gx2', x2)
-      //               this.setAttribute('gy2', y2)
+      // -- RE-CALCULATE LINES -- // 
+        childLinkGroups
+            .transition( )
+            .duration(1000)
+            .tween("position", function() {
 
-      //               // get the lines inside the group.. which will have the same start and end point.. 
+                    let lines = d3.select(this).node( ).childNodes; 
+                    console.log (lines, '')
 
-      //               lines.forEach ( function (line, i) {   
-      //                         line.setAttribute ('x1', x1)
-      //                         line.setAttribute ('y1', y1)
-      //                         line.setAttribute ('x2', x2)
-      //                         line.setAttribute ('y2', y2)
+                    return function(t) {
 
-      //                         if (i==0) return line.setAttribute("d", curve2([[x1, y1], [x2, y2]]))
+                     //console.log ('tweeeeen') // get the source and target transform position.. 
+                      // get the movement of the source and target items 
+                     let linegrp = select(this); 
+                     let source = linegrp.datum().source; 
+                     let target = linegrp.datum().target;
+                    // console.log (source.gx, ' : ', source.gy, " ... ", target.gx, ', ', target.gy);
+                    let x1 = source.gx; 
+                    let y1 = source.gy 
+                    let x2 = target.gx; 
+                    let y2 = target.gy; 
 
-      //                       // -- other lines need a curve amt -- 
-      //                      let curvePath = createCurvePath (0, 0, x2, y2, i,  0.1 )
-      //                     line.setAttribute("d", curvePath)
-      //                })
-      //         };
+
+                    this.setAttribute('gx1', x1)
+                    this.setAttribute('gy1', y1)
+                    this.setAttribute('gx2', x2)
+                    this.setAttribute('gy2', y2)
+
+                    // get the lines inside the group.. which will have the same start and end point.. 
+
+                    lines.forEach ( function (line, i) {   
+                              line.setAttribute ('x1', x1)
+                              line.setAttribute ('y1', y1)
+                              line.setAttribute ('x2', x2)
+                              line.setAttribute ('y2', y2)
+
+                              if (i==0) return line.setAttribute("d", curve2([[x1, y1], [x2, y2]]))
+
+                            // -- other lines need a curve amt -- 
+                           let curvePath = createCurvePath (0, 0, x2, y2, i,  0.1 )
+                          line.setAttribute("d", curvePath)
+                     })
+              };
         
-      //   })
+        })
 
-      // // -- now update the links inside // -- 
-      //   //console.log(childLinkGroup.size()); // Check the number of selected elements
-      //   //console.log(childLinkGroup.nodes()); // Log the array of selected DOM nodes
-      //   //console.log (childLinkGroup.transition( ))
+      // -- now update the links inside // -- 
+        //console.log(childLinkGroup.size()); // Check the number of selected elements
+        //console.log(childLinkGroup.nodes()); // Log the array of selected DOM nodes
+        //console.log (childLinkGroup.transition( ))
 
-      //  // childLinkGroup
-      //  //       .transition( )
-      //  //       .duration(10000)
-      //  //      .tween ('linemove', linkTweenNew) ;// **
+       // childLinkGroup
+       //       .transition( )
+       //       .duration(10000)
+       //      .tween ('linemove', linkTweenNew) ;// **
 
 
 
