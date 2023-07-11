@@ -306,9 +306,7 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
         .attr('gx', d => d.gx)
         .attr('gy', d => d.gy)
         .attr('transform', (d => 'translate(0,0)'))
-        .on('click', function ( ){ 
-           console.log ("A CLICK TEST")
-        }); // Add onclick event listener
+        .on('click', handleClickedGroup); // Add onclick event listener
 
     // -- remove -- how they leave
     //groupLrg.exit()
