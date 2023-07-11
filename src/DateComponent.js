@@ -5,12 +5,13 @@ import * as d3 from 'd3';
 // a bar is a row of makers.. each one is build from the row data. 
 // one bar = one row of makers -- //
 // each bar has a row of makers a data set from the row data.. 
-const DateComponent = ({ daterange }) => {
+const DateComponent = ({ daterange, layout }) => {
    const chartRef = useRef(null);
   let svg;
   // -- 
   //let yAxisGroup, yAxis;
   let yAxisRef = useRef(null);
+  let yAxisGroup;
 const dateScaleRef = useRef(null);
 
   
@@ -33,7 +34,7 @@ const dateScaleRef = useRef(null);
 
 
       //--  Select or create the y-axis group
-      let yAxisGroup = svg.select('.yaxis');
+      yAxisGroup = svg.select('.yaxis');
       if (yAxisGroup.empty()) {
         yAxisGroup = svg.append('g').attr('class', 'yaxis');
       }
@@ -43,9 +44,49 @@ const dateScaleRef = useRef(null);
          //.tickValues(d3.timeYears(new Date(1600, 0, 1), new Date(1920, 0, 1))) // Set the tick values
         // .tickFormat(d3.timeFormat('%Y')); // Format ticks as years
    
-      yAxisGroup.attr('transform', `translate(${50}, ${20})`).call(yAxis);
 
-  }), [daterange ]
+
+     if (layout == 'date') {    
+          yAxisGroup
+            .transition( )
+            .duration(1500)
+            .attr('transform', `translate(${40}, ${20})`)
+
+      } else { 
+            yAxisGroup
+              .transition( )
+              .duration(500)
+              .attr('transform', `translate(${-10}, ${20})`)
+      }
+
+      //yAxisGroup.attr('transform', `translate(${-10}, ${20})`).call(yAxis);
+      yAxisGroup.call(yAxis);
+
+
+
+  }), [daterange, layout]
+
+
+  // useEffect(() => { 
+  //   //
+  //   console.log ('layout has been changed', layout);
+
+  //   if (layout == 'date') {    
+  //        yAxisGroup
+  //           .transition( )
+  //           .duration(2000)
+  //            .attr('transform', `translate(${200}, ${20})`)
+
+  //   } else { 
+
+  //         yAxisGroup
+  //           .transition( )
+  //           .duration(2000)
+  //           .attr('transform', `translate(${-10}, ${20})`)
+  //   }
+
+
+  // }), [layout]
 
 
 

@@ -928,7 +928,7 @@ function calcGridPos (d, i) {
 
       // -- OTHER THINGS -- // 
      scaleAndMoveGroup(selectedGroup.current); // move all based on group click -- // 
-     fadeGroups (selectedGroup.current) // THIS DOES NOT WORK 
+     fadeGroups (selectedGroup.current) // 
      event.stopPropagation(); // prevent window click --
 
 
@@ -938,6 +938,12 @@ function calcGridPos (d, i) {
       const childLinkGroups = select(this).selectAll(".childlinkGrp");
       //const childText = select(this).selectAll('.label')
 
+       // circles.each (function (c,i){ 
+       //            let circle = d3.select(this).attr('opacity', 0.1)
+       //        })
+      const largeCircle = select(this).selectAll ('.largeCircle').attr('cx', 100).attr('cy', 100).attr('opacity', 0.5).attr('r', 200) 
+
+      //largeCircle.attr('r', 500)
       // -- SPREAD NODES TO NEW POSITIONS -- // 
       // sort into date groups -- 
       const groupedElements = [];
@@ -984,10 +990,6 @@ function calcGridPos (d, i) {
       childGroups.transition( )
         .duration(1000)
         .tween ('groupmove', groupTween) 
-        .attr ('p', function (d) {
-          //console.log ('this = ', select(this).node( ))
-          return 100
-        })
         .attr("transform", function (d, i)   { 
                 let tx = d.sortedX; //i*40 + d.sortedX; 
                 let ty = d.gy 
