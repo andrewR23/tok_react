@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { saveAs } from 'file-saver';
 //import Slider from 'rc-slider';
 import Slider from '@mui/material/Slider';
 import Button from '@mui/material/Button';
@@ -8,129 +9,180 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
-
 // -- get data (sorted and clustered) -- // 
 import { base_nodes } from './data.js'; // base makers.. 
 import { social_Clusters } from './data.js' // social clusters 
 import { guild_Groups} from './data.js'
 import { town_Groups} from './data.js'
 import { rowsDataset } from './data.js'
-
+import { linkTypes } from './data.js'
  // import { base_links } from './data.js'
 
 
+const handleDataDump = () => {
+  const data = JSON.stringify({ social_Clusters }, null, 2);
+  const blob = new Blob([data], { type: 'text/plain;charset=utf-8' });
+  saveAs(blob, 'dataDump.txt');
+};
+
+
+//handleDataDump( )
 
 // -- bar chart vis  -- // 
-import ForceDirectComponent   from './ForceDirectComponent';
+import ForceDirectComponent   from './ForceDirectComponent'; // v2 working v3 working v5 working
 import BarsComponent   from './BarsComponent';
-
+import LinkComponent   from './LinkComponent';
+import DateComponent   from './DateComponent';
 
 
 import './styles.css'; // Import your custom CSS file
 
-
-
 // -------------------------------- //
-
-
 const App = () => {
 
-  // dates for tesing force direct 
+  //console.log ('link types = ', linkTypes)
+  //console.log ('rows  = ', rowsDataset)
 
-  // -- test dates -- // 
-  // let datearray = [{date:1800}, {date:1804}, {date:1809}, {date:1820}, {date:1840}, {date:1850}]
-  // let dateClusters= [ [1800, 1820, 1840], [1702, 1720, 1750], [1630, 1640, 1660, 1670]]
-  // const [dates, setDates] = useState(datearray)
-  // const [clusters, setClusters] = useState (dateClusters)
-  // const [data, setData] = useState(datearray); // another way to handle the data -- // 
-
-  /// 
-  //console.log ('links ', base_links)
-  //console.log ('data ', base_nodes)
-  //console.log ('social groups ', social_Clusters)
   // -- STATES -- // 
   const base_makers = base_nodes; // the base set of data 
-
 
   // -- maker data -- // 
   const [makers, setMakers] = useState ([ ]);         // the selection of makers to use 
 
+  const [linktypes, setLinkTypes]= useState ( linkTypes); 
   const [socialGroups, setSocialGroups] = useState (social_Clusters )
   const [townGroups, setTownGroups] = useState (town_Groups)
   const [guildGroups, setGuildGroups] = useState (guild_Groups)
 
+  // -- create a base group of social nodes to refer to -- // 
+  const socialGroups_base = [...social_Clusters];//
+
+  const [rowData, setRowData] = useState (rowsDataset)
+
  // const [socialLinks, setSocialLinks] = useState(base_links)
 
  // -- slider range and layout -- // 
-  const [sliderRange, setSliderRange] =   useState([1410, 1803]); // range value -- //
-  const [layout, setLayout] = useState ('force'); // set state for layout
+  const [dateRange, setDateRange] =   useState([1700, 1850]); // range value -- //
+  const [sizeRange, setSizeRange] = useState([5, 20]); // range for size of groups -- // 
+  const [yRange, setYRange] = useState([50, 900]); // range for size of groups -- // 
+
+
+  const [layout, setLayout] = useState ('grid'); // set state for layout
 
 // -- selected item -- 
   const [selectedItem, setSelectedItem] = useState( ); // single item that has been selected.. 
 
-  // ---- // 
-  //console.log ('rows data', rowsDataset)
+  // ---------------------- // 
+  // -- rows data set is the result of the query.. the 
+  console.log ('rows data', rowsDataset) // -- rows data set contains the results of the selection.. 
 
-  // -- unpack rows 
-  generateRowComponents( );
+  let allselected = rowsDataset[0].makers;  // the root (inital)
+  let flowselected = rowsDataset[rowsDataset.length-1].makers; // the paths (narrow)
 
-  // get and sort data in each row -- // 
-  function generateRowComponents ( )  { 
-      //console.log ('rows data =', rowsDataset)
-      rowsDataset.map ((d, i) => { 
-        //console.log ("makers data", d.makers)
-        //console.log ('query ', d.query)
+  //console.log ('social data', social_Clusters)
 
-        // sort / query the data for each row
+  //  filterMakersByDate(dateRange)
+  // -- dynamically generate rows -- // 
+   const renderBarComponents = () => {
+    // -- get an update of bar data - 
+    updateBarData( ); 
+    // -- render rows 
+    return rowsDataset.map((rowData, index) => {
+        let sourceData = rowData.query.att === 'towns' ? townGroups : guildGroups;
+        return (<BarsComponent key={index} data={sourceData}index={index} onData={handleBarData} />)
+    })
 
-        //if (i>0) return; 
-        // 1. find all makers in this row..(town or guild)
-        const source_data = d.query.att === 'towns' ? townGroups : guildGroups;
-        // console.log ('source query : ', d.query.att)
-        // console.log ('source data : ',  source_data); // clusters of towns etc.
+  };
 
-        // 2. compare with root makers 
-        //console.log ('makers in row ', d.makers)
+  // -- // 
 
-        // 3. find the makers that are in each cluste r
-        source_data.forEach (group => { 
-          //console.log (group)
-          // sort maker into 3 : those in makers - those in previous makers - s
-          group.nodes_sorted = [ ]  ;// empty object
+  function updateBarData ( ) { 
+    /// updates and sorts the data in each group.
+    rowsDataset.map((rowData, index) => {
+            let sourceData = rowData.query.att === 'towns' ? townGroups : guildGroups;
 
-          // find nodes in 
-          let foundnodes = group.nodes.filter (n => [...d.makers].includes(n))
-          let notfoundnodes = group.nodes.filter (n => [...d.makers].includes(n)== false); 
-          // ---- // 
-          group.nodes_sorted.push (foundnodes); 
-          group.nodes_sorted.push (notfoundnodes);
-          // also need to add 'previous nodes '
-          //console.log (group);
-
+            // -- get nodes in each group and compare to row selection -- // 
+            sourceData.forEach (sourceGroup => { 
+                // 1. sort nodes into three groups
+                let flow = [ ]; //this_row_selected = [ ]; // found in this 
+                let paths = [ ]; //prev_row_selected = [ ]; 
+                let none = [ ]; // not_selected = [ ]; 
+                // ---------------------- // 
+                let nodes_to_filter = [...sourceGroup.nodes] ; // start with all nodes. 
+                // -- 1. FLOW : this row selection (e.g. Clock and London) -- FLOW
+                flow = nodes_to_filter.filter (n =>rowData.makers.includes(n)) 
+                // -- 2. POSSIBLE PATHS : prev row selection but NOT in this row selection -- Possible Pathways
+                if (index > 0) {
+                    paths = nodes_to_filter.filter (n =>  rowsDataset[index-1].makers.includes(n)
+                                                                  && !rowData.makers.includes(n)) 
+                }
+                // -- 3. NOT SELECTED : not in this or prev row selection -- not selected
+                none = nodes_to_filter.filter (n => !paths.includes(n) && !flow .includes(n))
+                // ----- // 
+                sourceGroup.nodes_sorted = [ ]  ;// empty object
+                sourceGroup.nodes_sorted [0]= flow; 
+                sourceGroup.nodes_sorted [1]= paths; 
+                sourceGroup.nodes_sorted [2]= none; 
+                // -- log results -- // 
+                // console.log ('prev row selected  London + Not Clock (other guild)',  paths)
+                // console.log ('this row selected: Clock + London ',  flow)
+                // console.log ('not  selected: Not London  :  ',  none)
+                // console.log ('all makers ', sourceGroup.nodes)
         })
-        //return <BarsComponent data={townGroups}ypos={10} type={'location'} />
-      }); 
-
-
+    })
   }
 
-  // -- dynamically generate -- // 
-   const renderChildComponents = () => {
-    return rowsDataset.map((value, index) => (
-      <BarsComponent key={index} data={townGroups}ypos={index* 60 + 120} type={'location'} />
-    ))
-  };
 
   // -- EVENTS / FUNCTIONS -- //
 
   // --. Set / Update Range Slider  -- // 
 
+  // -- SLIDER ------------ //
   // -- on slider move -- update makers by time range -- 
   const handleSliderChange = (event, range) => {
-      setSliderRange(range)       // set date range state
+      setDateRange(range)       // set date range state
       filterMakersByDate(range)    // update  makers (nodes) by date range  
+
       //filterDatesTest(range)
   };
+
+    // -- on slider end -- filter groups by 
+  const handleSliderEnd = (event, range) => { 
+      filterSocialGroups( )       // filter social groups -by makers selection
+      filterTownGroups ( );
+      filterGuildGroups ( ); 
+      //updateBarData( );
+      //console.log ('slider range ', dateRange)
+
+  }
+
+  const handleResetBtn = (event) =>  { 
+      filterSocialGroups( )       // filter social groups -by makers selection
+      filterTownGroups ( );
+      filterGuildGroups ( );
+  }
+
+  // slider for number items 
+  const handleSizeSlider_change = (event, range) => { 
+    setSizeRange(range)
+  }
+
+  const handleSizeSlider_end = (event, range) => { 
+    // use sizeRange to filter groups.. 
+    filterSocialGroupsBySize( );
+  }
+
+  // -- y pos slider -- //
+  const handleYSlider_change = (event, range) => { 
+    setYRange(range)
+  }
+
+  const handleYSlider_end = (event, range) => { 
+    // use sizeRange to filter groups.. 
+    //filterSocialGroupsBySize( );
+  } 
+
+  // ---------------------------------- // 
 
   const filterDatesTest = (range) => { 
       // -- filter dates -- simple array of objects -- // 
@@ -148,15 +200,6 @@ const App = () => {
       setClusters (clusters)
       const updatedData = [...datefilter];
       setData (updatedData)
-
-
-  }
-
-  // -- on slider end -- filter groups by 
-  const handleSliderEnd = (event, range) => { 
-      filterSocialGroups( )       // filter social groups -by makers selection
-      filterTownGroups ( );
-      filterGuildGroups ( ); 
   }
 
   // --  filter data by date -- // update visualisation.. // 
@@ -165,10 +208,11 @@ const App = () => {
       setMakers (selection) // set makers 
   }
 
-  function toggleLayoutState ( ) { 
-        const newlayout = layout == 'force' ? 'date' : 'force';
-        setLayout (newlayout)
+
+  function setLayoutState (layoutState) { 
+      setLayout (layoutState)
    }
+
 
    // -- date filter function allows for more nuance -- // 
   function filterByDate (range) {
@@ -182,6 +226,10 @@ const App = () => {
      return filter;
    }
 
+ // -- get the existing groups (social, town , guild ) and filter them (by date slider -or by other means?) 
+  // could we filter by size -- e.g. size of maker group.. 
+
+   // this uses the already filtered  'makers'
   function filterSocialGroups() {
       // -- add or remove items into each cluster -- //
       const updatedGroups = socialGroups.map((group) => {
@@ -206,6 +254,30 @@ const App = () => {
     }
 
 
+  // --  FILTER SOCIAL GROUPS BY SIZE -- // 
+  // -- this needs more work --- // 
+  function filterSocialGroupsBySize ( ) { 
+    // size = sizeRange[0][1]
+    console.log ('size = ', sizeRange) 
+    // current social clusters === // 
+    console.log ('base cluster : ', socialGroups_base);
+    console.log ('current cluster : ', socialGroups)
+
+    // get the size of each group... 
+    // if it is less than size then... clear all the nodes -- othewise return to what? 
+    // we either have to add or remove entire groups.. 
+    // when we add the groups - we also have to filter by date.. 
+    socialGroups.forEach ((group, i) => { 
+        // get size 
+        if (group.nodes.length < sizeRange[0] || group.nodes.length>[1] ) { 
+           // remove from list.. // but also need to add to list.. 
+           // or just clear nodes.. ??? 
+        }
+    })
+
+  }
+
+
 
   function filterTownGroups ( ) { 
     // fiter by makers 
@@ -224,7 +296,6 @@ const App = () => {
 
   }
 
-
   function filterGuildGroups ( ) { 
     // fiter by makers 
     const updatedGroups = guildGroups.map((group) => {
@@ -242,7 +313,7 @@ const App = () => {
 
   }
 
-  // -- a higher order function -- // 
+  // -- a GENERIC -- higher order function -- // 
       function filterGroups(key) {
         return () => {
           const groups = key === 'social' ? socialGroups : townGroups;
@@ -265,7 +336,7 @@ const App = () => {
   // ----------------------------------- // 
 
 
-    // -- hand data click callback --
+  // -- hand data click callback -- for force direct -- // 
 
   const handleDataClick = (data) => {
           console.log ("this is some data that has been clicked ...", data)
@@ -280,41 +351,225 @@ const App = () => {
   }
 
 
+ // find a specific maker width
+
+  const [childData, setChildData] = useState([]);
+  // -- new stuff for links
+  const handleChildData = (data) => {
+    setChildData(data) ; // (prevData) => [...prevData, data]);
+    console.log (childData)
+  };
+
+
+  // -- HANDLE BAR STATE  (updates of bars) -- // 
+  // from each bar get the bar dom.. 
+  const [barState, setBarState] = useState([ ]);
+  const [linkState, setLinkState] = useState(null)
+  const [linkStatePaths, setLinkStatePaths] = useState(null)
+  const [linkStateFlows, setLinkStateFlows] = useState(null)
+
+
+
+  const handleBarData = (data) => { 
+    // update BarState
+      setBarState((prevBarState) => { 
+        const existingData = prevBarState.find((previtems) => previtems.id === data.id);
+
+        if (existingData) {
+             // Update the existing barData in the barState
+              return prevBarState.map((item) => (item.id === data.id ? data : item));
+            } else {
+                // Append the new barData to the barState
+              return [...prevBarState, data];
+        }
+    });
+
+      // const existingData = prevBarState.find((data) => data.id === barData.id);
+      // console.log ('existing data ',)
+  }
+
+  // should this work in a different way ?? 
+  // -- this updates the data state from the bars .. 
+  // -- GET BAR ITEMS and CREATE LINKS -- // 
+  useEffect(() => {
+
+      if (barState == undefined || barState.length==0) return; 
+      //console.log ('bar data = ', barState )
+      // -------------------------------------
+      
+      let base_links = [ ];
+      let path_links = [ ];
+      let flow_links = [ ];
+      
+      // -- THIS FUNCTION DRAWS "BASE" LAYERS -- // 
+      // -- for each point in the bar get the target bar (and x y )
+      barState[0].data.each (function (bar, i) { 
+        // -- list of nodes to find a target for: 
+        //console.log ('bar 0 data = ', bar)
+        const transformAttr  = this.getAttribute ('transform')
+        const [, xStart, yStart] = transformAttr.match(/translate\((.*),\s*(.*)\)/) || [];
+        let startPos = [ parseFloat (xStart), parseFloat (yStart)]
+        let nodeIDs = bar.nodes.map (n => n.id)
+        // console.log ("nodeIDs ", nodeIDs, ' , ', i)
+
+        // -- find matching items in the next bar down -- ///
+        barState[1].data.each (function (nextbar, ni) { 
+          // find match in next row... 
+          let nodesinblock = nextbar.nodes.map (n => n.id)
+          // console.log ('target nodes = ', nodesinblock)
+          // console.log ('target block = ', this)
+          let founditems = nodesinblock.filter (n => nodeIDs.includes (n)=== true)
+          if (founditems.length>0) {
+                const [, xTarget, yTarget] = this.getAttribute('transform').match(/translate\((.*),\s*(.*)\)/) || [];
+                let targPos = [ parseFloat (xTarget), parseFloat (yTarget)]
+                // console.log ('found items = ', founditems, ' , ', ni )
+                // console.log ('start pos = ', startPos)
+                // console.log ('target pos = ', targPos)
+
+                // -- create a links object 
+                let linkobj = { 
+                    source: [startPos[0]+founditems.length/2, startPos[1]+20], 
+                    target: [targPos[0] +founditems.length/2, targPos [1]], 
+                    count: founditems.length
+                  }
+                base_links.push (linkobj);
+
+            }
+
+          })
+
+      })
+      setLinkState(base_links)
+
+      // ------------------------------- // 
+
+      // -- FUNCTION to DRAW -- FLOW layers and PATH (potential) layers 
+      // -- paths are in the lower bar [1] -- // find paths on lower bar.. 
+      // 0 - 0 works (flow)
+      // 1 - 0 works (paths)
+      barState[1].data.each (function (lowbar, i) { 
+            // get the nodes in paths ()
+            let pathNodeIDs = lowbar.nodes_sorted[1].map (n => n.id); // nodes_sorted[1]is paths 
+            if (pathNodeIDs.length==0) return;
+            // -- get block x y -- //
+            const transformAttr  = this.getAttribute ('transform')
+            const [, xStart, yStart] = transformAttr.match(/translate\((.*),\s*(.*)\)/) || [];
+            let startPos = [ parseFloat (xStart), parseFloat (yStart)]
+            // -- 
+            //console.log (startPos)
+            // -- look for matching items in the row ABOVE -- // 
+             barState[0].data.each (function (topbar, ni) { 
+                  let nodesinblock = topbar.nodes_sorted[0].map (n => n.id); 
+                  let founditems = nodesinblock.filter (n => pathNodeIDs.includes (n) === true); // look for items in 
+                  //console.log (founditems)
+                  
+
+                  if (founditems.length>0) {
+                        const [, xTarget, yTarget] = this.getAttribute('transform').match(/translate\((.*),\s*(.*)\)/) || [];
+                        let targPos = [ parseFloat (xTarget), parseFloat (yTarget)];
+                       // console.log (targPos)
+                        let linkobj = { 
+                            source: [startPos[0]+founditems.length/2, startPos[1]+20], 
+                            target: [targPos[0] +founditems.length/2, targPos [1]], 
+                            count: founditems.length
+                  }
+
+                  path_links.push (linkobj);
+                  //console.log ('path links =', path_links)
+              }
+
+          }) 
+      })
+
+      setLinkStatePaths(path_links)
+
+
+        barState[1].data.each (function (lowbar, i) { 
+            // get the nodes in paths ()
+            let pathNodeIDs = lowbar.nodes_sorted[0].map (n => n.id); // nodes_sorted[1]is paths 
+            if (pathNodeIDs.length==0) return;
+            // -- get block x y -- //
+            const transformAttr  = this.getAttribute ('transform')
+            const [, xStart, yStart] = transformAttr.match(/translate\((.*),\s*(.*)\)/) || [];
+            let startPos = [ parseFloat (xStart), parseFloat (yStart)]
+            // -- 
+            //console.log (startPos)
+            // -- look for matching items in the row ABOVE -- // 
+             barState[0].data.each (function (topbar, ni) { 
+                  let nodesinblock = topbar.nodes_sorted[0].map (n => n.id); 
+                  let founditems = nodesinblock.filter (n => pathNodeIDs.includes (n) === true); // look for items in 
+                  //console.log (founditems)
+                  
+
+                  if (founditems.length>0) {
+                        const [, xTarget, yTarget] = this.getAttribute('transform').match(/translate\((.*),\s*(.*)\)/) || [];
+                        let targPos = [ parseFloat (xTarget), parseFloat (yTarget)];
+                       // console.log (targPos)
+                        let linkobj = { 
+                            source: [startPos[0]+founditems.length/2, startPos[1]+20], 
+                            target: [targPos[0] +founditems.length/2, targPos [1]], 
+                            count: founditems.length
+                  }
+
+                  flow_links.push (linkobj);
+                  //console.log ('path links =', path_links)
+              }
+
+          }) 
+      })
+
+       setLinkStateFlows(flow_links)
+
+
+
+    }, [barState]);
 
 
 
   // ----- JSX ---- // 
   return (
     <div>
-      <h3>ToK into React</h3>
-      <Button variant="text" onClick={toggleLayoutState}>toggle layout</Button>
+      {/*<h3>ToK into React</h3>*/}
+      <Button variant="text" onClick={() => setLayoutState('grid')}>grid</Button>
+      <Button variant="text" onClick={() => setLayoutState('force')}>force</Button>
+      <Button variant="text" onClick={() => setLayoutState('date')}>date</Button>
+      <Button variant="text" onClick={() => handleResetBtn()}>reset</Button>
 
-      
+
       <div className="vis-container">
         {/*<VisualizationComponent data={data} />*/}
-        <svg width={1000} height={600}>
+        <svg width={2000} height={2000} transform="translate(-220, -170) scale(0.75)">
               <ForceDirectComponent 
                 data={socialGroups} 
+                selection={rowData}
+                linktypes={linktypes}
                 layout={layout}
+                yRange={yRange}
+                daterange={dateRange}
                 selectedItem ={selectedItem}
                 onDataClick={handleDataClick}
                 onItemClick={handleItemClick}
                 />
+
+                <DateComponent daterange={dateRange}/>
               
 
+              {/*{generateRowComponents()}*/}
+              {/*<LinkComponent linkdata={linkState} pathlinkdata={linkStatePaths} flowlinkdata={linkStateFlows} onData={handleChildData} />*/}
+              {renderBarComponents()}
 
-              {/*{renderChildComponents()}*/}
     
-            <BarsComponent
+         {/*     <BarsComponent
                 data={townGroups} 
                 ypos={10}
                 type={'location'}
-              />
-              <BarsComponent
+              />*/}
+              {/*  
+                <BarsComponent
                 data={guildGroups} 
                 ypos={70}
                 type={'guilds'}
-              />
+              />*/}
 
 
         </svg>
@@ -323,16 +578,42 @@ const App = () => {
       <div className="slider-container">
        <Slider
             size="small"
-            value={sliderRange}
+            value={dateRange}
             onChange={handleSliderChange}
             onChangeCommitted={handleSliderEnd}
             getAriaLabel={() => 'date range'}
-            min={1400}
-            max={1930}
+            min={1600}
+            max={1920}
             step={1}
             valueLabelDisplay="on"
         />
+
+      {/*<Slider
+            size="small"
+            value={sizeRange}
+            onChange={handleSizeSlider_change}
+            onChangeCommitted={handleSizeSlider_end}
+            getAriaLabel={() => 'number range'}
+            min={1}
+            max={50}
+            step={1}
+            valueLabelDisplay="on"
+        />*/}
+
+    {/*    <Slider
+            size="small"
+            value={yRange}
+            onChange={handleYSlider_change}
+            // onChangeCommitted={handleYSlider_end}
+            getAriaLabel={() => 'Y range'}
+            min={100}
+            max={400}
+            step={1}
+            valueLabelDisplay="on"
+        />*/}
       </div>
+
+
 
   
    

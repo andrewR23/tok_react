@@ -1,16 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { barChart } from './d3Vis.js';
 import * as d3 from 'd3';
+import { Typography } from '@mui/material';
 
 
 // a bar is a row of makers.. each one is build from the row data. 
 // one bar = one row of makers -- //
 // each bar has a row of makers a data set from the row data.. 
-const BarsComponent = ({ data, ypos }) => {
+const BarsComponent = ({ data, index, onData }) => {
   const svgRef = useRef(null); // this is the thing that gets updated.. 
+    const headingRef = useRef(null);
   // -- 
+  let block; // useRef(null);
+  let blockItems; 
+  let blockGroup;
+  let ypos;
+
+  let type; 
 
   useEffect(()=> { 
+    
+    //onData("hello this is some data")// send data to parent... 
 
   }), [ ]
 
@@ -18,200 +28,209 @@ const BarsComponent = ({ data, ypos }) => {
   useEffect(() => {
     // --  draw bar chart 
     // -- add interaction -- //
+    console.log ('bar data is updated ..  .', data); 
+    type = data[0].type.replace('cluster', '');
+   // console.log ('type = ', type)
 
-    console.log ('ypos = ', ypos)
-    //console.log ("bar data = ", data); // map (m => m.nodes)) // this is the data.. 
+    ypos = index * 30; 
+    const headingContainer = d3.select (headingRef.current)
+    headingContainer.attr('x', -50).attr('y', ypos+20); 
+    const headingText = type;
+    headingContainer.text(headingText);
 
-    // draw data.. 
-    const svg = d3.select(svgRef.current)
-    let block = svg.selectAll ('.block').data (data)
-
-   // -- Draw A Block for each data item 
-
-  // -- update --  //I think this should be a group -- 
-
-    // then add each node element into the group !!! 
-
-
-  
-        block
-            .attr('y', ypos)
-            .transition ( )
-            .duration (1000)
-            .attr('x', (d, i)  => { 
-               const sum = data
-                  .slice(0, i) // Get the preceding items
-                  .reduce((accumulator, item) => accumulator + item.nodes.length+5, 0);
-               return sum + 10
-              }) 
-          
-            .attr('width', d => d.nodes.length + 1)
     
-        // -- Enter new groups -- how the first enter -- 
-        block
-            .enter()
-            .append('rect')
-            .attr ('class', 'block')
-            .attr('x', (d, i)  => { 
-               const sum = data
-                  .slice(0, i) // Get the preceding items
-                  .reduce((accumulator, item) => accumulator + item.nodes.length+5, 0);
-               return sum + 10
-              }) 
-            .attr('y', ypos)
-            .attr('width', d => d.nodes.length + 1)
-            .attr('height', 20)
-            .attr('fill', 'DodgerBlue')
 
-        // -- remove -- how they leave
-        block.exit()
-           .remove();
+    drawBlocks()
+    drawBlockGroup( );
+    //findBlockByMaker( )
 
-
-    // -- attach rect to each block - according to the number of nodes.. 
-
-  // ------------------------------- // 
-// MY GO 
-  //  let bGroup = block.selectAll ('.bGroup').data (d => d.nodes)
-     // let bGroup = svg.selectAll ('.bGroup').data(data).data(d => d.nodes)
-
-  // bGroup
-    //   .attr('x', 0)
-
-    // bGroup.enter ( )
-    //   .append('rect')
-    //   .attr('class', 'bGroup')
-    //   .attr ('x', 100)
-    //   .attr ('y', 100)
-    //   .attr ('width', 10)
-    //   .attr ('height', 10)
-    //   .attr ('fill', 'red')
-
-
-    // bGroup.exit( )
-    //     .remove( )
-  
-  // ------------------------------- // 
-// AI2
-    // let nodes = block.selectAll('.node')
-    //         .data(d => d.nodes)
-    //         .enter()
-    //         .append('g')
-    //         .attr('class', 'node');
-
-    //   nodes.append('circle')
-    //       .attr('cx', 100)// Example x-position based on index
-    //       .attr('cy', 100) // Example y-position
-    //       .attr('r', 10) // Example radius
-    //       .attr('fill', 'red')
-      
-     // nodes.exit ( )
-     //  .remove( )
-
-  // ------------------------------- // 
-// AI3
-// let nodes = svg.selectAll('.node')
-//   .data(data)
-//   .selectAll('.node')
-//   .data(d => d.nodes)
-//   .enter()
-//   .append('circle')
-//   .attr('cx', 20) // Example x-position based on index
-//   .attr('cy', 50) // Example y-position
-//   .attr('r', 10) // Example radius
-//   .style('fill', 'blue'); // Example fill color
-
-
-
-
-
-
-  // ------------------------------- // 
-
-    // enter // update // remove // 
-    //drawBlocksV1 ( )
-
-
+    // update block data in parent 
+    const barData = { id: index, data: blockGroup};
+    onData(barData)
 
   }, [data]);
 
-function drawBlocksV1 ( ) { 
-      const svg = d3.select(svgRef.current)
 
-      let block = svg.selectAll ('.block').data (data)
+function drawBlocks ( ) { 
+    // draw data.. 
+    //console.log ('draw block')
+    let svg = d3.select(svgRef.current)
+    block  = svg.selectAll ('.block').data (data)
 
-   // -- Draw A Block for each data item update -- 
-        block
-            .attr('y', ypos)
-            .transition ( )
-            .duration (1000)
-            //.attr ('showdata', d => console.log (d.nodes_sorted))
-            .attr('x', (d, i)  => { 
-              // Calculate the sum of maker lengths
-               const sum = data
-                  .slice(0, i) // Get the preceding items
-                  .reduce((accumulator, item) => accumulator + item.nodes.length+5, 0);
-               return sum + 10
-              }) 
-          
-            .attr('width', d => d.nodes.length + 1)
+    // -- Draw A Block for each data item 
+    // -- update --  //I think this should be a group -- 
+    // then add each node element into the group !!! 
+    let spacing = 10; 
 
-       
-        // -- Enter new groups -- how the first enter -- 
-        block
-            .enter()
-            .append('rect')
-            .attr ('class', 'block')
-            .attr('x', (d, i)  => { 
-              // Calculate the sum of maker lengths
-               const sum = data
-                  .slice(0, i) // Get the preceding items
-                  .reduce((accumulator, item) => accumulator + item.nodes.length+5, 0);
-               return sum + 10
-              }) 
-            .attr('y', ypos)
-            .attr('width', d => d.nodes.length + 1)
-            .attr('height', 20)
-            .attr('fill', 'DodgerBlue')
-            // append sub-items here ?? 
+    block
+        .attr('y', ypos)
+        .transition ( )
+        .duration (1000)
+        .attr('x', (d, i)  => { 
+           const sum = data
+              .slice(0, i) // Get the preceding items
+              .reduce((accumulator, item) => accumulator + item.nodes.length+spacing, 0);
+           return sum + spacing
+          }) 
+      
+        .attr('width', d => d.nodes.length )
 
-        // -- remove -- how they leave
-        block.exit()
-           .remove();
+    // -- Enter new groups -- how the first enter -- 
+    block
+        .enter()
+        .append('rect')
+        .attr ('class', 'block')
+        .attr('x', (d, i)  => { 
+           const sum = data
+              .slice(0, i) // Get the preceding items
+              .reduce((accumulator, item) => accumulator + item.nodes.length+spacing, 0);
+           return sum + spacing
+          }) 
+        .attr('y', ypos)
+        .attr('width', d => d.nodes.length )
+        .attr('height', 20)
+        .attr('fill', 'DodgerBlue')
 
-
-    // V2-- draw block for each item in nodes_selected. 
-    let blockGroup = svg.selectAll ('.blockgroup').data (data)
-    console.log ('bg = ', data)
-    // for each data item -draw a grou
-    //let blockdata = blockGroup 
-    blockGroup
-            .attr ('x', 0)
-
-     blockGroup.enter()
-        //.append('g')
-       // .merge(blockGroup)
-       // .attr('class', 'blockgroup')
-        .each(function (d) {
-            d3.select(this)
-                .selectAll('.blockitem')
-                .data([d.nodes_sorted])
-                .enter()
-                .append('rect')
-                .attr ('class', 'blockitem')
-                // .attr('x', (d, i) => i * rectWidth)
-                // .attr('y', 0)
-                // .attr('width', rectWidth)
-                // .attr('height', rectHeight);
-        });
+    // -- remove -- how they leave
+    block.exit()
+       .remove();
 
 
 
 }
 
+function drawBlockGroup ( ) { 
+    let svg = d3.select(svgRef.current)
 
-  return (
-    <g ref={svgRef}></g>
+    // -- draw a block for each item of data -- // 
+    // draw inner blocks - each block should be a group.. 
+    blockGroup = svg.selectAll('.blockGrp').data (data)
+
+    // into the group add three blocks one for each of 
+   // blockGroup.attr('transform', 'translate(0,0)')
+
+
+    // put each block group at the correct x y positoin -- // 
+    let spacing = 10; 
+
+
+    // -- update -- 
+    blockGroup
+        .transition( )
+        .duration(1000)
+        .attr ('transform', (d, i) => { 
+            const sum = data
+              .slice(0, i) // Get the preceding items
+              .reduce((accumulator, item) => accumulator + item.nodes.length+spacing, 0);
+            const x = sum + 10;
+            const y = ypos;
+            return (`translate(${x}, ${y})`)
+        })
+
+
+    // -- enter -- // 
+    blockGroup.enter ( )
+        .append ('g')
+        .attr('class', 'blockGrp')
+        .attr ('transform', (d, i) => { 
+            const sum = data
+              .slice(0, i) // Get the preceding items
+              .reduce((accumulator, item) => accumulator + item.nodes.length+spacing, 0);
+            const x = sum + 10;
+            const y = ypos;
+            return (`translate(${x}, ${y})`)
+        })
+
+
+    // into each block group add a block 
+    blockItems = blockGroup.selectAll('.blockItem').data (d => d.nodes_sorted)
+
+     // -- update -- 
+    blockItems
+            .transition( )
+            .duration(1000)
+            .attr('x', function (d, i) {
+                let xpos = 0; 
+                // -- apply a total value to each ?? 
+                if (i ==0) { 
+                    d.total = d.length;
+                    xpos = 0 ; 
+                }
+
+                if (i > 0) { 
+                   let prev = d3.select(this.previousSibling)
+                    d.total = d.length + prev.datum( ).total;
+                    xpos = prev.datum( ).total ; 
+                }
+
+                return xpos; 
+            })
+            .attr('y', 0)
+            .attr ('width', d => d.length)
+
+
+    // -- enter -- 
+    blockItems.enter( ) 
+            .append ('rect')
+            .attr ('class', 'blockItem')
+            .attr('x', function (d, i) {
+                let xpos = 0; 
+                // -- apply a total value to each ?? 
+                if (i ==0) { 
+                    d.total = d.length;
+                    xpos = 0 ; 
+                }
+
+                if (i > 0) { 
+                   let prev = d3.select(this.previousSibling)
+                    d.total = d.length + prev.datum( ).total;
+                    xpos = prev.datum( ).total ; 
+                }
+
+                return xpos; 
+            })
+            .attr('y', 0)
+            .attr ('width', d => d.length)
+            .attr ('height',20)
+            .attr ('fill', (d,i)  => { 
+                //eturn 'red'
+                // 0 = flow, 1 = paths 3 = none
+                return i === 0 ?  '#FF5733'  : i === 1 ? "Gold" : i === 2 ? "PowderBlue" : "black";
+            })
+            .attr('opacity', 1)
+            // .on('click', function (d, i) {
+            //      clickBlockItem(d, i)
+            // });
+            .on('click', function(d, i) {     
+                console.log (this.getAttribute('fill')) // differential by fill -- 
+            });
+
+
+}
+
+
+function clickBlockItem (element, data) {
+        console.log("Clicked item index:", this);
+        console.log("Clicked element:", d3.select (element));
+        console.log("Clicked data:", data);
+}
+
+
+function findBlockByMaker( ) { 
+    // which block contain the maker 
+    console.log ("find block by maker = ", block)
+    block.each (function (b) { 
+        console.log ('block ', b)
+        console.log ('this', this)
+        // get the block and 
+    })
+}
+
+
+return (
+    <g ref={svgRef} transform="translate(50, 0) scale(1)">
+    <text ref={headingRef}></text>
+    </g>
   );
 
 };

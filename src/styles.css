@@ -34,9 +34,14 @@
 
 .slider-container {
   position: absolute;
-  top: 720px;
-  left: 20px;
-  width: 600px;
+  top: 40px;
+  left: 300px;
+  width: 400px;
   margin: auto;
 }
+
+.vis-container { 
+    cursor: pointer;
+
+ }
 

@@ -3,7 +3,7 @@ import netClustering from 'netclustering';
 
 // -- generate ROWS from QUERY STRING -- // 
 
-const queryString = 'towns=London&guilds=Clockmakers'; // 'towns=London&date>1800';
+const queryString = 'towns=London&guilds=Clockmakers'; // 'towns=Chigwell&guilds=Clockmakers'; // 'towns=London&date>1800';
 const url = 'https://example.com/data?location%21%3DLondon%26date%3E1800';
 const string = 'location%21%3DLondon%26date%3E1800'
 
@@ -33,7 +33,7 @@ let advInst_Groups = [ ]
 let town_Groups = [ ]
 
 // -- import the data -- // and sort into groups ?? 
-let makerCount = 50 ; // 1220;
+let makerCount = 800 ; // 1220;
 let allmakers = makers.makers;
 let someMakers = allmakers.slice (0, makerCount);
 
@@ -45,17 +45,74 @@ let nodeAlpha = 1;
 let base_nodes = [ ]; 
 let base_links = [ ];
 
-// -- need to get
-let linkTypes = [
-  'apprenticed_to', 
-  'associated_with', 
-  'see_also', 
-  'employed_by', 
-  'succeeded_by', 
-  'took_over_from', 
-  'had_apprentice', 
-  'parent_of'
-  ]
+// -- extract attributes -- // 
+const excludedProperties = [
+  "id",
+  "name",
+  "guilds",
+  "towns",
+  "advertised_instruments",
+  "known_instruments",
+  "date_1",
+  "date_1_qual",
+  "date_2",
+  "date_2_qual"
+];
+
+const attributes = [];
+
+// Iterate over each maker object
+allmakers.forEach((maker) => {
+  Object.keys(maker).forEach((key) => {
+    if (!attributes.includes(key) && !excludedProperties.includes(key)) {
+          attributes.push(key);
+    }
+  });
+});
+
+
+
+//console.log(attributes);
+
+
+// -- need to get all of the possible link types 
+ // -- extracted from data 
+ let linkTypes = [
+      "see_also",
+      "associated_with",
+      "apprenticed_to",
+      "had_apprentice",
+      "employed_by",
+      "succeeded_by",
+      "took_over_from",
+      "child_of",
+      "sibling_of",
+      "spouse_of",
+      "same_premises_as",
+      "parent_of",
+      "unknown_relation",
+      "worked_for",
+      "partnership",
+      "agent_to",
+      "nephneice_of",
+      "cousin_of",
+      "uncaunt_of",
+      "supplied_to",
+      "grandchild_of",
+      "supplied_by",
+      "son-in-law_of",
+      "stepchild_of",
+      "step-parent_of",
+      "owned_by",
+      "owner_of",
+      "friend_of",
+      "father-in-law_of",
+      "brother-in-law_of",
+      "subcontractor_to",
+      "fellow_apprentice_of",
+      "supplied_to",
+      "_creditor_of"
+]
 
 
 // -- GET LISTS of the ATTRIBUTE names (in some makers) -- // 
@@ -123,15 +180,19 @@ someMakers.forEach (m => {
               let foundInverse =  base_links.filter (link => link.source == target_id && link.target == m.id  && link.type == linkType);
               let foundMatch =  base_links.filter (link => link.source == m.id && link.target == target_id  && link.type == linkType);
 
+
+
               // -- if none found - add a new link
               if (foundInverse.length == 0 && foundMatch.length == 0) {
                 let source = m; 
                 let target = allmakers.find ( maker => maker.id == target_id);
-                let newLinkItems = { source:m, target: target, count:1, type:linkType}; // links as REFs 
+                let newLinkItems = { source:m, target: target, count:1, type:[linkType]}; // links as REFs 
                 // --- // 
-                let newLinkID =  { source:m.id, target: target_id, count:1, type:linkType}; // links as IDs 
+                let newLinkID =  { source:m.id, target: target_id, count:1, type:[linkType]}; // links as IDs 
                 base_links.push (newLinkID);
               } 
+
+
 
               // -- if found a match -- add to 
               if (foundInverse.length > 0)  foundInverse[0].count +=1;
@@ -157,10 +218,12 @@ makerDataset.allmakers = [...base_nodes]
 // --for each part of the query create a row -- // 
 // -- get each part of the query --  and poputate row data 
 queryItems.forEach ((q, i)  => { 
-  rowsDataset.push ( { id : i, query: q, makers : [ ]})
+  rowsDataset.push ( { id : i, query: q, makers : [ ]}) // create new row.. 
   populateRowData (rowsDataset[i])
 })
 
+console.log ('rows = ', rowsDataset)
+console.log ('links = ', base_links)
 
 /// --------------------------------- /// 
 
@@ -199,6 +262,7 @@ export {social_Clusters}
 export {guild_Groups}
 export {town_Groups}
 export {rowsDataset} ;// sorted rows 
+export {linkTypes}
 
 // export links.. 
 //export {base_links}
@@ -285,21 +349,63 @@ function getClusters_social (n_list,  socialLinks) {
             let links = [ ]; // -- populate links -- // 
             nodeIds.forEach (n => { 
               let foundlinks = socialLinks.filter (link => link.source == n.id || link.target == n.id)
+
+              //console.log ('all links in cluster = ', foundlinks)
               //let foundlinks = socialLinks.filter (link => link.source == n.maker.id || link.target == n.maker.id)
+
+              // remove any that are between the same nodes.. 
               
               // --convert each ID into a ref to main items
               foundlinks.forEach (link => { 
                 link.source = base_nodes.find (node => node.id == link.source)
                 link.target = base_nodes.find (node => node.id == link.target)
+                //link.type = ['add_type_here']
               })
 
+              // -- find links which are duplicated or opposite.. 
+
+
+
+              // Create a map to store unique links based on source and target
+                const uniqueLinksMap = new Map();
+
+                // Iterate over each link
+                for (const link of foundlinks) {
+                  // Generate a unique key using the source and target
+                  const key = `${link.source.id}-${link.target.id}`;
+
+                  // If the key already exists in the map, merge the types
+                  if (uniqueLinksMap.has(key)) {
+                    const existingLink = uniqueLinksMap.get(key);
+                    existingLink.type = [...new Set([...existingLink.type, ...link.type])];
+                  } else {
+                    // Otherwise, check if an opposite link exists
+                    const oppositeKey = `${link.target.id}-${link.source.id}`;
+                    const oppositeLink = uniqueLinksMap.get(oppositeKey);
+
+                    if (oppositeLink) {
+                      // If an opposite link exists, merge the types with the opposite link
+                      oppositeLink.type = [...new Set([...oppositeLink.type, ...link.type])];
+                    } else {
+                      // Otherwise, add the link to the map
+                      uniqueLinksMap.set(key, link);
+                    }
+                  }
+                }
+
+                // Get the compiled links as an array // different to found links.. 
+                let compiledLinks = Array.from(uniqueLinksMap.values());
+
+                //console.log('compliled links : ', compiledLinks);
+                //console.log ('links... ', foundlinks )
               // -- add to links if not already in -- // ?
-              foundlinks.forEach (link => {                    
+              compiledLinks.forEach (link => {                    
                 if (links.indexOf (link) === -1) links.push (link)
               })
 
             })
             // ------------------------------------ // 
+
 
             // create new cluster object 
             let clusterObj = { 
@@ -389,6 +495,7 @@ function sortByAttribute (nodes, attr) {
 //populateRowData (rowsDataset[0])
 //populateRowData (rowsDataset[1])
 
+// -- this is a function that populates each row with found makers.. 
 function populateRowData (row) { 
      let sourcedata = row.id === 0 ? makerDataset.allmakers : rowsDataset[row.id-1].makers;
      let filterdata = filterMakers (sourcedata, row.query.att, row.query.value);
