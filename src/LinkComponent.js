@@ -162,7 +162,7 @@ function drawPath( ) {
 
 
  return (
-    <g ref={svgRef}transform="translate (700, 0) scale(1)"></g>
+    <g ref={svgRef}transform="translate (50, 0) scale(1)"></g>
   );
 };
 

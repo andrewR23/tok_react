@@ -384,7 +384,7 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
           .attr('class', 'label')
           .attr('x', 5)
           .attr('y', 10)
-          .text(function (d) { console.log ( 'd ', d); return d.name})
+          .text(function (d) { return d.name})
           .style('fill', 'black')
           .style('font-size', '8px')
           .style('font-family', 'sans-serif')
@@ -859,55 +859,93 @@ function calcGridPos (d, i) {
 
   function fadeGroups(selected) { 
       console.log ("fade group ", selected); 
-      // -- not working online... 
-      groupLrg.each(function (group) { 
-          // -- items NOT selected -- // 
-        if (this !== selected) {
-             // 
-             // FADE NON_SELECTED inner elements 
-            let largecircle=  select(this).selectAll('.largeCircle');
-            let smallcircles = select(this).selectAll('.smallCircle');
-            let paths = select(this).selectAll('.childlines');
-            // -- alter opacity and fade -- // 
-            largecircle.attr('opacity', 0.1)//.attr('fill', 'pink').
-            smallcircles.attr('opacity', 0.1)//.attr('fill', 'red')
-            paths.attr('opacity', 0.1)//.attr('stroke', 'cream')
+      console.log ('this group ', select(this))
+      console.log ('childs ', select(this).selectAll('.child')) // the groups -- // 
+
+      const group = d3.select(selected)
+      const childgroup = group.selectAll(".child");
+      const childcircles = group.selectAll('.child circle')
+
+      childcircles.each (function (c, i) { 
+         const circle = d3.select(this);
+         circle.attr('fill', 'black')
+         circle.attr('opacity', 0.1)
+      })
 
 
+      childgroup.each(function(c, i) { 
+          const group = d3.select(this);
+          console.log ('c ', group)
+          // Log attribute value
+          console.log("Attribute value transform:", group.attr("transform"));
+          //group.attr("x", 500);
+           // Log style value
+          console.log("Style value transform:", group.style("transform"));
+         // child.style("styleName", "newValue");
 
-        } else { 
-          // -- ITEMS that ARE selected -- // 
-          let largecircle=  select(this).selectAll('.largeCircle');
-          let smallcircles = select(this).selectAll('.smallCircle');
-          let paths = select(this).selectAll('.childlines');
-
-
-          largecircle.attr('fill', 'gray').attr('opacity', 0.1)
-          smallcircles.attr('r', d => 5)//yearScaleSize(d.date_1))
-                      //.attr ('fill', 'red')
-                      .attr('opacity', 1.1)
-
-          paths.attr('class', 'childlines')
-                  .attr ('stroke', 'gray') // d => linkColorScale(d))
-                  .style("stroke-width", "1px")
-                  .style('fill', 'none')
-                  .attr('opacity', 0.9)
-
-            /// -- move tihs ?/ 
-            select(this)
-                .transition( )
-                 .duration(2000)
-                //.tween ('groupmove', groupTween) 
-                .attr('transform', d => { 
-                  return `translate(${d.gx}, ${d.gy}) scale(1.5)`
-                })
-               // .attr('transform', 'translate(700, -100) scale(2.5)');
-
-
-        }
-
+          // log style value
 
       })
+      // get all child nodes.. 
+
+      // select(this).selectAll('.child').each (function (child, i) { 
+      //   console.log ('child item  = ', child)
+
+      // })
+      // -- not working online... 
+        //d3.select(this).select('text').style('visibility', 'visible');
+      //console.log ('select ', d3.select(this))
+      //d3.select(this).selectAll('circle').style('opacity', 0.1)
+
+
+      // groupLrg.each(function (group) { 
+      //     // -- items NOT selected -- // 
+      //   if (this !== selected) {
+      //        // 
+      //        // FADE NON_SELECTED inner elements 
+      //       let largecircle=  select(this).selectAll('.largeCircle');
+      //       let smallcircles = select(this).selectAll('.smallCircle');
+      //       let paths = select(this).selectAll('.childlines');
+      //       // -- alter opacity and fade -- // 
+      //       largecircle.attr('opacity', 0.1)//.attr('fill', 'pink').
+      //       smallcircles.attr('opacity', 0.1)//.attr('fill', 'red')
+      //       paths.attr('opacity', 0.1)//.attr('stroke', 'cream')
+
+
+
+      //   } else { 
+      //     // -- ITEMS that ARE selected -- // 
+      //     let largecircle=  select(this).selectAll('.largeCircle');
+      //     let smallcircles = select(this).selectAll('.smallCircle');
+      //     let paths = select(this).selectAll('.childlines');
+
+
+      //     largecircle.attr('fill', 'gray').attr('opacity', 0.1)
+      //     smallcircles.attr('r', d => 5)//yearScaleSize(d.date_1))
+      //                 //.attr ('fill', 'red')
+      //                 .attr('opacity', 1.1)
+
+      //     paths.attr('class', 'childlines')
+      //             .attr ('stroke', 'gray') // d => linkColorScale(d))
+      //             .style("stroke-width", "1px")
+      //             .style('fill', 'none')
+      //             .attr('opacity', 0.9)
+
+      //       /// -- move tihs ?/ 
+      //       select(this)
+      //           .transition( )
+      //            .duration(2000)
+      //           //.tween ('groupmove', groupTween) 
+      //           .attr('transform', d => { 
+      //             return `translate(${d.gx}, ${d.gy}) scale(1.5)`
+      //           })
+      //          // .attr('transform', 'translate(700, -100) scale(2.5)');
+
+
+      //   }
+
+
+      // })
 
   }
 
@@ -917,8 +955,8 @@ function calcGridPos (d, i) {
   // -- do something with the clicked group -- //
 
   function handleClickedGroup ( ) { 
-      console.log ("group is clicked...")
-       console.log (this)
+      //console.log ("group is clicked...")
+      //console.log (this)
 
       selectedGroup.current= this; 
 
@@ -981,7 +1019,7 @@ function calcGridPos (d, i) {
         .duration(1000)
         .tween ('groupmove', groupTween) 
         .attr ('p', function (d) {
-          console.log ('this = ', select(this).node( ))
+          //console.log ('this = ', select(this).node( ))
           return 100
         })
         .attr("transform", function (d, i)   { 

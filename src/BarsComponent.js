@@ -32,7 +32,7 @@ const BarsComponent = ({ data, index, onData }) => {
     type = data[0].type.replace('cluster', '');
    // console.log ('type = ', type)
 
-    ypos = index * 30; 
+    ypos = index * 20; 
     const headingContainer = d3.select (headingRef.current)
     headingContainer.attr('x', -50).attr('y', ypos+20); 
     const headingText = type;
