@@ -207,8 +207,8 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
   /// - use effect for interactions.. // ?? (All of them ?? )
   useEffect(() => {
       // -- groupLrg.on('click', scaleAndMoveGroup); // -- click on item to move the whole group and zoom in.. 
-      groupLrg.on('click', handleClickedGroup); 
-      //window.addEventListener('click', handleClickedWindow);
+      //groupLrg.on('click', handleClickedGroup); 
+      window.addEventListener('click', handleClickedWindow);
 
 
     }, []);
@@ -306,6 +306,9 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
         .attr('gx', d => d.gx)
         .attr('gy', d => d.gy)
         .attr('transform', (d => 'translate(0,0)'))
+        .on('click', function ( ){ 
+           console.log ("A CLICK TEST")
+        }); // Add onclick event listener
 
     // -- remove -- how they leave
     //groupLrg.exit()
@@ -915,7 +918,9 @@ function calcGridPos (d, i) {
   // -- do something with the clicked group -- //
 
   function handleClickedGroup ( ) { 
-      console.log ("group is clicked...")
+      //console.log ("group is clicked...")
+       //console.log (this)
+
       selectedGroup.current= this; 
 
       // -- OTHER THINGS -- // 
