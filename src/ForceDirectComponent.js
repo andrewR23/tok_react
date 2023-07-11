@@ -857,44 +857,19 @@ function calcGridPos (d, i) {
 
   // -- fade out all elements -- (non selected )-- (also de-scale ?? )
 
-  function fadeGroups(selected) { 
-      // console.log ("fade group ", selected); 
-      // console.log ('this group ', select(this))
-      // console.log ('childs ', select(this).selectAll('.child')) // the groups -- // 
+  function fadeGroups(selected) {
 
-      // const group = d3.select(selected)
-      // const childgroup = group.selectAll(".child");
-      // const childcircles = group.selectAll('.child circle')
-
-      // // -- 1. get  selected -- // 
-      // childcircles.each (function (c, i) { 
-      //    const circle = d3.select(this);
-      //    //circle.attr('fill', 'red')
-      //    //circle.attr('opacity', 1)
-      // })
-
-      // // -- 2. get everything -- and change opacity
-      // const allcircles = d3.selectAll('.grpLarge .child circle')
-      // console.log ("all circles =", allcircles)
-      
-      // allcircles.each (function (c, i){ 
-      //     const circle = d3.select (this)
-      //     console.log ('a circle ', circle)
-      //    // circle.attr('fill', 'black')
-      //    // circle.attr('opacity', 0.1)
-
-      // })
-
-      // -- 3. get everything EXCEPT selected. 
-      const allgroups = d3.selectAll ('.grpLarge')
+      // --  get all groups selected -- //
+      const allgroups = d3.selectAll ('.grpLarge'); // get all groups in the DOM
 
       allgroups.each (function (g,i){ 
 
-          // -- get all the circles and paths inside the  group 
+          // -- get all the circles and paths inside each  group 
           let circles = d3.select (this).selectAll ('.child circle');
           let paths = d3.select (this).selectAll ('.childlinkGrp path');
           let text = d3.select (this).selectAll ('.child text');
 
+          // -- if this group is NOT selected -- // 
           if (this != selected) { 
               //-- if NOT selected
               circles.each (function (c,i){ 
@@ -909,8 +884,12 @@ function calcGridPos (d, i) {
                   let text = d3.select(this).style('visibility', 'hidden')
               })
 
+              let grp = d3.select(this)
+                  .transition( )
+                  .duration(2000)
+                  .attr('transform', d => (`translate(${d.gx}, ${d.gy}) scale(1.0)`))
 
-        } else { 
+          } else { 
               // -- if IS selected
               circles.each (function (c,i){ 
                   let circle = d3.select(this).attr('opacity', 1.0)
@@ -924,7 +903,12 @@ function calcGridPos (d, i) {
                   let text = d3.select(this).style('visibility', 'visible')
               })
 
-        }
+              let grp = d3.select(this)
+                  .transition( )
+                  .duration(2000)
+                  .attr('transform', d => (`translate(${d.gx}, ${d.gy}) scale(2.5)`))
+
+          }
 
       })
 
