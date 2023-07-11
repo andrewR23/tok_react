@@ -551,7 +551,7 @@ const App = () => {
                 onItemClick={handleItemClick}
                 />
 
-                {/*<DateComponent daterange={dateRange}/>*/}
+                <DateComponent daterange={dateRange}/>
               
 
               {/*{generateRowComponents()}*/}
