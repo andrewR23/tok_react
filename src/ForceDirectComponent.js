@@ -591,7 +591,7 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
                   if (d.nodes.length > 0) {
                       //d.nodes = d.nodes.sort((a, b) => a.date_1 - b.date_1); // -- not needed if sorted elsewhere -- // --
                       // -- set the baseY for the group -- 
-                      d.baseY = 100; // dateScaleRef.current(d.nodes[0].date_1); // -- earliest year -- // 
+                      d.baseY =  dateScaleRef.current(d.nodes[0].date_1); // -- earliest year -- // 
                   }
                   let xpos = i *xspacing + 100;
                  return 'translate('+xpos+','+ d.baseY+')'
