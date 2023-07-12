@@ -33,7 +33,7 @@ let advInst_Groups = [ ]
 let town_Groups = [ ]
 
 // -- import the data -- // and sort into groups ?? 
-let makerCount = 200 ; // 1220;
+let makerCount = 800 ; // 1220;
 let allmakers = makers.makers;
 let someMakers = allmakers.slice (0, makerCount);
 

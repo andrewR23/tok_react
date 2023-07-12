@@ -839,7 +839,7 @@ function calcGridPos (d, i) {
       let scale = 1; 
       // -- centre : 1000 x 500 (half width and half height) --
       let cx = 1000/scale; 
-      let cy = 500/scale;
+      let cy = 200/scale; // put at the top-- // 
       // -- target position -- 
       let tx = (cx - gx)*scale; //* (1 - scale); 
       let ty = (cy - gy)*scale; // * (1 - scale);
