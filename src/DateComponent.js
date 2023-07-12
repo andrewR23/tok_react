@@ -23,7 +23,7 @@ const dateScaleRef = useRef(null);
       dateScaleRef.current = d3.scaleLinear()
 
       // set the size of the node according to date -- 
-      dateScaleRef.current.domain([daterange[0], daterange[1]]).range ([0, 1000]) ; // y pos 
+      dateScaleRef.current.domain([daterange[0], daterange[2]]).range ([0, 1000]) ; // y pos 
 
 
       //let c = svg.append('circle').attr('cx', 100).attr('cy', 100).attr('r', 100)

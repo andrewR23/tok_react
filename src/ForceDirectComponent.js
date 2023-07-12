@@ -92,6 +92,11 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
                             .domain([1600, 1900])
                             .range([0, 1000]);
 
+    yearScaleSize.domain([daterange[1]-50, daterange[1], daterange[1]+50]).range([4, 12, 4]); // size (min max min)
+    //yearScaleSize.domain([daterange[1]-(daterange[1]-daterange[0]), daterange[1], daterange[1]+(daterange[2]-daterange[1])]).range([1, 10, 1]); // size (min max min)
+
+
+
   }, [ ])
 
   // -- 
@@ -99,7 +104,7 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
 
   // -- on data AND layout update -- 
   useEffect (() => { 
-     console.log ('incoming data  =', data)
+      //console.log ('incoming data  =', data)
       //console.log ('date range = ', daterange)
       svg = d3.select(chartRef.current)
 
@@ -121,15 +126,16 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
       })
 
       //----------------------------------//
-      // update selection : 
-      // let allselected = selection[0].makers;
-      // let flowselected = selection[selection.length-1].makers; 
-      // console.log ('flow selected = ', flowselected)
-      //console.log ('selection = ', selectedMakers.current )
 
-      yearScaleSize.domain([daterange[0], daterange[0]+50]).range([2, 10]); // size 
 
-      dateScaleRef.current.domain([daterange[0], daterange[1]]).range ([0, 1000]) ; // y pos 
+      // this should not be in two places..!
+      yearScaleSize.domain([daterange[1]-50, daterange[1], daterange[1]+50]).range([4, 12, 4]); // size (min max min)
+
+      //yearScaleSize.domain([daterange[1]-(daterange[1]-daterange[0]), daterange[1], daterange[1]+(daterange[2]-daterange[1])]).range([1, 10, 1]); // size (min max min)
+
+
+      // set size of date scale
+      dateScaleRef.current.domain([daterange[0], daterange[2]]).range ([0, 1000]) ; // y pos 
 
       // ------------------------------ // 
       // -- DATE RANGE -- // 
@@ -412,14 +418,14 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
       smallCircle
           .transition( )
           .duration(1000)
-          .attr('r', d => 5)//yearScaleSize(d.date_1))
+          .attr('r', d =>  (Math.max (yearScaleSize(d.date_1), 0))+2)
             .attr ('fill', d => { 
               if (selectedMakers.current[1].makers.map (m => m.id).includes(d.id)) return 'red'
               if (selectedMakers.current[0].makers.map (m => m.id).includes(d.id)) return 'gold'
 
               return 'gray'
           })          
-          .attr('opacity', 1.1)
+          .attr('opacity', 0.7)
 
       smallCircle
           .enter()
@@ -427,13 +433,13 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
           .attr ('class', 'smallCircle')
            .transition( )
             .duration(1000)
-          .attr('r', d => 5)//yearScaleSize(d.date_1))
+          .attr('r', d =>  (Math.max (yearScaleSize(d.date_1), 0))+2)
           .attr ('fill', d => { 
               if (selectedMakers.current[1].makers.map (m => m.id).includes(d.id)) return 'red'
               if (selectedMakers.current[0].makers.map (m => m.id).includes(d.id)) return 'gold'
               return 'gray'
           })
-          .attr('opacity', 1.1)
+          .attr('opacity', 0.7)
 
   }
 
@@ -839,7 +845,7 @@ function calcGridPos (d, i) {
       let scale = 1; 
       // -- centre : 1000 x 500 (half width and half height) --
       let cx = 1000/scale; 
-      let cy = 200/scale; // put at the top-- // 
+      let cy = 50/scale; // put at the top
       // -- target position -- 
       let tx = (cx - gx)*scale; //* (1 - scale); 
       let ty = (cy - gy)*scale; // * (1 - scale);

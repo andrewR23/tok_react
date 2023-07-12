@@ -62,7 +62,7 @@ const App = () => {
  // const [socialLinks, setSocialLinks] = useState(base_links)
 
  // -- slider range and layout -- // 
-  const [dateRange, setDateRange] =   useState([1700, 1850]); // range value -- //
+  const [dateRange, setDateRange] =   useState([1680, 1760, 1900]); // range value -- //
   const [sizeRange, setSizeRange] = useState([5, 20]); // range for size of groups -- // 
   const [yRange, setYRange] = useState([50, 900]); // range for size of groups -- // 
 
@@ -78,6 +78,21 @@ const App = () => {
 
   let allselected = rowsDataset[0].makers;  // the root (inital)
   let flowselected = rowsDataset[rowsDataset.length-1].makers; // the paths (narrow)
+
+  const slidermarks = [
+        {
+          value: 1600,
+          label: '1600',
+        },
+        {
+          value: 1760,
+          label: '1760'
+        },
+        {
+          value: 1920,
+          label: '1920',
+        },
+      ];
 
   //console.log ('social data', social_Clusters)
 
@@ -138,6 +153,15 @@ const App = () => {
   // --. Set / Update Range Slider  -- // 
 
   // -- SLIDER ------------ //
+
+
+
+
+
+
+
+
+
   // -- on slider move -- update makers by time range -- 
   const handleSliderChange = (event, range) => {
       setDateRange(range)       // set date range state
@@ -182,18 +206,30 @@ const App = () => {
     //filterSocialGroupsBySize( );
   } 
 
+
+
+
+
+
+
+
+
+
+
+
+
   // ---------------------------------- // 
 
   const filterDatesTest = (range) => { 
       // -- filter dates -- simple array of objects -- // 
-      let datefilter = [...datearray].filter (d => d.date>range[0] && d.date<range[1])
+      let datefilter = [...datearray].filter (d => d.date>range[0] && d.date<range[2])
       //console.log ('date filter = ', datefilter)
       setDates (datefilter)
 
       // --filter inner dates -- clusters -- // 
       let clusters = [ ]
       let clusterFilter = [...dateClusters].forEach (c => { 
-          let filter = c.filter (d => d>range[0] && d<range[1])
+          let filter = c.filter (d => d>range[0] && d<range[2])
           clusters.push (filter)
       })
       //console.log ('cluster filter' , clusters)
@@ -222,7 +258,7 @@ const App = () => {
      let equalTo = (a, b) => a == b; 
      let isBetween = (a, b, c) => a > b && a < c; 
      // -- filter makers and return -- // 
-     let  filter = base_makers.filter (m =>  isBetween (m.date_1, range[0], range[1]));
+     let  filter = base_makers.filter (m =>  isBetween (m.date_1, range[0], range[2]));
      return filter;
    }
 
@@ -527,7 +563,7 @@ const App = () => {
 
 
   // ----- JSX ---- // 
-  return (
+return (
     <div>
       {/*<h3>ToK into React</h3>*/}
       <Button variant="text" onClick={() => setLayoutState('grid')}>grid</Button>
