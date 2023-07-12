@@ -53,8 +53,10 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
   let selectedMakers = useRef (selection)
 
   // -- 
+
   // let scaleRef = useRef(2); 
   // let translateRef  = useRef ([300, 300])
+
   // -- updated when data is updated // 
   // -- init - create forces  -- //
 
@@ -63,7 +65,7 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
             .force("center", d3.forceCenter(0, 0).strength(1)) // Adjust center as needed
             .force("collide", d3.forceCollide(10)) // Adjust radius as needed
             //.force("charge", d3.forceManyBody().strength(-10)) // Adjust strength as needed
-            .force("link", d3.forceLink(d.links).id(d => d.id).distance(20)); // link FORCCE.. 
+            .force("link", d3.forceLink(d.links).id(d => d.id).distance(10)); // link FORCCE.. 
         return simulation;
   }
 
@@ -77,7 +79,7 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
       .forceSimulation(data)
       .force('center', d3.forceCenter(1000, 500).strength(1))
       .force('charge', d3.forceManyBody().strength(1))
-      .force('collide', d3.forceCollide(d => d.nodes.length * 10+ 2));
+      .force('collide', d3.forceCollide(d => d.nodes.length * 6+ 2));
 
     // -- create child simulation -- //
     simulation_childRef.current = data.map(createChildSimulation);
@@ -99,9 +101,11 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
 
   // -- on data AND layout update -- 
   useEffect (() => { 
-     console.log ('incoming data  =', data)
+     // console.log ('incoming data  =', data)
       //console.log ('date range = ', daterange)
       svg = d3.select(chartRef.current)
+
+
 
       groupLrg = svg.selectAll('.grpLarge').data(data);
       groupSmall = groupLrg.selectAll('.child').data(d => d.nodes)
@@ -262,31 +266,19 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
             .tween ('groupmove', groupTween) // update the gx and gy values -- 
             .attr("transform", d => `translate(${d.x}, ${d.y})`);
         
-       
+         // childLink
+         //      .transition( )
+         //      .duration(100)
+         //      .tween ('linemove', lineTween)
+
         // -- for multiple lines -- (a group with lines situtated within) -- //
-        
-          childLinkGroup
-              .transition( )
-              .duration(100)
-              .tween  ('pathmove', function (d) {   
-                    let childLines = d3.select(this).selectAll('.childlines');
+        childLinkGroup
+            .transition( )
+            .duration(100)
+            .tween ('linemove', linkGroupTween) ;// **
 
-                    return function (t) { 
-                          // -- get the  xy positions of the group 
-                          let x1 = d.source.gx; 
-                          let y1 = d.source.gy; 
-                          let x2 = d.target.gx; 
-                          let y2 = d.target.gy; 
-                          //console.log (`x1, ${x1} , y1 ${y1},  x2 ${x2}  y2${y2}}`)
 
-                          // -- UPDATE PATHS TWEEN -- // paths --
-                          childLines.each ( function (p, i) {  
-                              // // -- the first line is straight -- 
-                              let path = d3.select(this).attr("d", curve2([[x1, y1], [x2, y2]]))
-                          })
-                    }
-            })
-  }
+    }
 
 
 
@@ -392,15 +384,11 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
           .attr('class', 'label')
           .attr('x', 10)
           .attr('y', 10)
-          .text(function (d) {
-              let titlecase = d.name.charAt(0).toUpperCase() +d.name.substring(1).toLowerCase();
-              return titlecase;
-          })
-          .style('fill', 'DimGray')
-          .style('font-size', '10px')
-          .style('text-transform', 'lowercase')
-          .style('text-transform', 'capitalize')
+          .text(function (d) { return d.name})
+          .style('fill', 'black')
+          .style('font-size', '6x')
           .style('font-family', 'sans-serif')
+          .style('color', 'red')
           .style('visibility', 'hidden')
           .attr('transform', 'rotate(-30, 10, 10)');
 
@@ -728,7 +716,7 @@ function calcGridPos (d, i) {
         .transition( )
         .duration(2000)
         .tween ('groupmove', groupTween) 
-        .attr('transform', 'translate(700, -100) scale(1.25)');
+        .attr('transform', 'translate(700, -100) scale(2.5)');
 
 
     // -- for each line get the makers attached. 
@@ -919,7 +907,7 @@ function calcGridPos (d, i) {
               let grp = d3.select(this)
                   .transition( )
                   .duration(2000)
-                  .attr('transform', d => (`translate(${d.gx}, ${d.gy}) scale(1.5)`))
+                  .attr('transform', d => (`translate(${d.gx}, ${d.gy}) scale(1.75)`))
 
           }
 
@@ -1269,7 +1257,7 @@ function createCurvePath (x1, y1, x2, y2, i, curveAmt) {
     //   {console.log("Logging something...", scaleRef.current)}
     // </g>
 
-    <g ref={chartRef} transform="translate(0, 100) scale(1.5)"></g>
+    <g ref={chartRef} transform="translate(0, 100) scale(1)"></g>
 
   );
 
