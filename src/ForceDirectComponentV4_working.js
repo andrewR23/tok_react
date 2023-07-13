@@ -644,29 +644,7 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
             childLinkGroup
               .transition( )
               .duration(3000)
-              //.tween ('linemove', linkGroupTween);// (OLD)
-              .tween ('newposition', function(d) { 
-                let childlines = d3.select(this).selectAll('.childlines')
-
-                return function (t) { 
-                    let x1 = d.source.gx; 
-                    let y1 = d.source.gy; 
-                    let x2 = d.target.gx; 
-                    let y2 = d.target.gy; 
-                    //console.log (`new:x1, ${x1} , y1 ${y1},  x2 ${x2}  y2${y2}}`)
-
-                    childlines.each (function (p, i){ 
-                        let path = d3.select(this)
-                        if (i==0) return path.attr("d", curve2([[x1, y1], [x2, y2]])) ; // if first line draw straight path..
-                        // 
-                        let curve = createCurvePath (0, 0, x2, y2, i,  0.009 );// slight curved path ?? 
-                        path.attr("d", curve)
-
-
-                    })
-                }
-            })
-
+              .tween ('linemove', linkGroupTween);// **
 
 
   }
@@ -1061,7 +1039,7 @@ function calcGridPos (d, i) {
                     childlines.each (function (p, i){ 
                         let path = d3.select(this)
                         //console.log ("i = ", i) // no. of paths in a single link.. 
-                        if (i==0) return path.attr("d", curve2([[x1, y1], [x2, y2]])) ; // if first line draw straight path..
+                        if (i==0) return path.attr("d", curve2([[x1, y1], [x2, y2]]))
                         let curve = createCurvePath (0, 0, x2, y2, i,  0.1 )
                         path.attr("d", curve)
 

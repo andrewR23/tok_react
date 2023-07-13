@@ -644,29 +644,7 @@ const ForceDirectComponent = ({ data, layout, selection, linktypes, daterange, y
             childLinkGroup
               .transition( )
               .duration(3000)
-              //.tween ('linemove', linkGroupTween);// (OLD)
-              .tween ('newposition', function(d) { 
-                let childlines = d3.select(this).selectAll('.childlines')
-
-                return function (t) { 
-                    let x1 = d.source.gx; 
-                    let y1 = d.source.gy; 
-                    let x2 = d.target.gx; 
-                    let y2 = d.target.gy; 
-                    //console.log (`new:x1, ${x1} , y1 ${y1},  x2 ${x2}  y2${y2}}`)
-
-                    childlines.each (function (p, i){ 
-                        let path = d3.select(this)
-                        if (i==0) return path.attr("d", curve2([[x1, y1], [x2, y2]])) ; // if first line draw straight path..
-                        // 
-                        let curve = createCurvePath (0, 0, x2, y2, i,  0.009 );// slight curved path ?? 
-                        path.attr("d", curve)
-
-
-                    })
-                }
-            })
-
+              .tween ('linemove', linkGroupTween);// **
 
 
   }
@@ -1044,31 +1022,63 @@ function calcGridPos (d, i) {
           }); // move and scale the group (with the circle in it ...)
 
 
-      // -- RE-CALCULATE LINES of the selected group -- // 
+      // -- RE-CALCULATE LINES -- // 
         childLinkGroups
             .transition( )
             .duration(1000)
-            .tween ('newposition', function(d) { 
-                let childlines = d3.select(this).selectAll('.childlines')
+            .tween("position", function() {
 
-                return function (t) { 
-                    let x1 = d.source.gx; 
-                    let y1 = d.source.gy; 
-                    let x2 = d.target.gx; 
-                    let y2 = d.target.gy; 
-                    //console.log (`new:x1, ${x1} , y1 ${y1},  x2 ${x2}  y2${y2}}`)
+                    let lines = d3.select(this).node( ).childNodes; 
+                    console.log (lines, '')
 
-                    childlines.each (function (p, i){ 
-                        let path = d3.select(this)
-                        //console.log ("i = ", i) // no. of paths in a single link.. 
-                        if (i==0) return path.attr("d", curve2([[x1, y1], [x2, y2]])) ; // if first line draw straight path..
-                        let curve = createCurvePath (0, 0, x2, y2, i,  0.1 )
-                        path.attr("d", curve)
+                    return function(t) {
+
+                     //console.log ('tweeeeen') // get the source and target transform position.. 
+                      // get the movement of the source and target items 
+                     let linegrp = select(this); 
+                     let source = linegrp.datum().source; 
+                     let target = linegrp.datum().target;
+                    // console.log (source.gx, ' : ', source.gy, " ... ", target.gx, ', ', target.gy);
+                    let x1 = source.gx; 
+                    let y1 = source.gy 
+                    let x2 = target.gx; 
+                    let y2 = target.gy; 
 
 
-                    })
-                }
-            })
+                    this.setAttribute('gx1', x1)
+                    this.setAttribute('gy1', y1)
+                    this.setAttribute('gx2', x2)
+                    this.setAttribute('gy2', y2)
+
+                    // get the lines inside the group.. which will have the same start and end point.. 
+
+                    lines.forEach ( function (line, i) {   
+                              line.setAttribute ('x1', x1)
+                              line.setAttribute ('y1', y1)
+                              line.setAttribute ('x2', x2)
+                              line.setAttribute ('y2', y2)
+
+                              if (i==0) return line.setAttribute("d", curve2([[x1, y1], [x2, y2]]))
+
+                            // -- other lines need a curve amt -- 
+                           let curvePath = createCurvePath (0, 0, x2, y2, i,  0.1 )
+                          line.setAttribute("d", curvePath)
+                     })
+              };
+        
+        })
+
+      // -- now update the links inside // -- 
+        //console.log(childLinkGroup.size()); // Check the number of selected elements
+        //console.log(childLinkGroup.nodes()); // Log the array of selected DOM nodes
+        //console.log (childLinkGroup.transition( ))
+
+       // childLinkGroup
+       //       .transition( )
+       //       .duration(10000)
+       //      .tween ('linemove', linkTweenNew) ;// **
+
+
 
   }
 
