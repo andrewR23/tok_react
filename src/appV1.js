@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import * as d3 from 'd3';
+
 import { saveAs } from 'file-saver';
 //import Slider from 'rc-slider';
 import Slider from '@mui/material/Slider';
@@ -33,8 +35,7 @@ import ForceDirectComponent   from './ForceDirectComponent'; // v2 working v3 wo
 import BarsComponent   from './BarsComponent';
 import LinkComponent   from './LinkComponent';
 import DateComponent   from './DateComponent';
-import KeyComponent   from './KeyComponent';
-
+import ColorKeyComponent   from './ColorKeyComponent';
 import SimpleTable   from './SimpleTable';
 
 
@@ -64,6 +65,9 @@ const App = () => {
   const [rowData, setRowData] = useState (rowsDataset)
 
  // const [socialLinks, setSocialLinks] = useState(base_links)
+
+  // colour scales 
+  //const [colorScale, setColorScale] = useState(null) 
 
  // -- slider range and layout -- // 
   const [dateRange, setDateRange] =   useState([1680, 1760, 1900]); // range value -- //
@@ -102,6 +106,22 @@ const App = () => {
       ];
 
   //console.log ('social data', social_Clusters)
+
+  // set colour scale  --> to add to force direct and to colour component
+    const [colorScale, setColorScale] = useState(() => {
+            return d3.scaleOrdinal()
+              .domain(Object.keys(linkGroups))
+              .range(['rgb(215,48,39)','rgb(244,109,67)','rgb(253,174,97)','rgb(254,224,144)','rgb(255,255,191)','rgb(224,243,248)','rgb(171,217,233)','rgb(116,173,209)','rgb(69,117,180)'])
+
+                //['#1f306e', '#1f306e', '#8f3b76', '#c7417b', '#c7417b', 'yellow', 'pink', 'brown', 'gray', 'cyan']);
+    });
+
+    //console.log('colorScale domain NEW:', colorScale.domain());
+
+
+
+  // - log -- 
+
 
   //  filterMakersByDate(dateRange)
   // -- dynamically generate rows -- // 
@@ -596,6 +616,7 @@ return (
                 data={socialGroups} 
                 selection={rowData}
                 linkGroups={linkGroups}
+                colorScale = {colorScale}
                 layout={layout}
                 daterange={dateRange}
                 sliderState ={sliderState}
@@ -605,6 +626,8 @@ return (
                 />
 
                 <DateComponent daterange={dateRange} layout={layout}/>
+                <ColorKeyComponent colorScale={colorScale} linkGroups={layout}/>
+
               
 
               {/*{generateRowComponents()}*/}

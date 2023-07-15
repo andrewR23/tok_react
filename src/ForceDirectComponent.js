@@ -9,7 +9,7 @@ import * as f from './functions.js';
 
 
 
-const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, sliderState, selectedItem, onDataClick,  onItemClick }) => {
+const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, colorScale, sliderState, selectedItem, onDataClick,  onItemClick }) => {
   
   // -- dom elements -- 
   const chartRef = useRef(null);
@@ -26,22 +26,13 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
   const dateScaleRef = useRef(null);
   let yearScaleSize = d3.scaleLinear()
 
-  // -- colour scale -- can this be updated depending on context -- // 
-  let linkColorScale = d3.scaleOrdinal( )
-      .domain(['see_also', 'child_of', 'took_over_from'])
-      .range (['red', 'orange', 'blue'])
-      .unknown(['black'])
-
  //-- link colours -- // 
-  //console.log ("link groups = ", linkGroups);
-
-
-let groupColorScale = d3.scaleOrdinal()
-  .domain(Object.keys(linkGroups))
-  .range(['red', 'orange', 'blue', 'green', 'purple', 'yellow', 'pink', 'brown', 'gray', 'cyan']);
-
-let colourkeys = groupColorScale.domain( );
-let colourvals = groupColorScale.range ( );
+ let groupColorScale = colorScale; // from parent app 
+ // d3.scaleOrdinal()
+ //   .domain(Object.keys(linkGroups))
+ //   .range(['red', 'orange', 'blue', 'green', 'purple', 'yellow', 'pink', 'brown', 'gray', 'cyan']);
+ //let colourkeys = groupColorScale.domain( );
+  //let colourvals = groupColorScale.range ( );
 
   // -- selections 
   let groupLrg;
@@ -71,9 +62,9 @@ let colourvals = groupColorScale.range ( );
   function createChildSimulation(d) {
         const simulation = d3.forceSimulation(d.nodes)
             .force("center", d3.forceCenter(0, 0).strength(1)) // Adjust center as needed
-            .force("collide", d3.forceCollide(10)) // Adjust radius as needed
+            .force("collide", d3.forceCollide(30)) // Adjust radius as needed
             //.force("charge", d3.forceManyBody().strength(-10)) // Adjust strength as needed
-            .force("link", d3.forceLink(d.links).id(d => d.id).distance(30)); // link FORCCE.. 
+            .force("link", d3.forceLink(d.links).id(d => d.id).distance(40)); // link FORCCE..(set link to closeness in date ? ) 
         return simulation;
   }
 
@@ -312,7 +303,7 @@ let colourvals = groupColorScale.range ( );
         //console.log ('tick small')
           groupSmall
             .transition( )
-            .duration(100)
+            .duration(200)
             .tween ('groupmove', groupTween) // update the gx and gy values -- 
             .attr("transform", d => `translate(${d.x}, ${d.y})`);
         
@@ -321,7 +312,7 @@ let colourvals = groupColorScale.range ( );
         
           childLinkGroup
               .transition( )
-              .duration(100)
+              .duration(200)
               .tween  ('pathmove', function (d) {   
                     let childLines = d3.select(this).selectAll('.childlines');
 

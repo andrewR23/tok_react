@@ -118,7 +118,7 @@ allmakers.forEach((maker) => {
 
 let linkTypes_grouped = {
 
-      group1: [
+      family: [
           "child_of",
           "sibling_of",
           "spouse_of",
@@ -135,7 +135,7 @@ let linkTypes_grouped = {
           "brother-in-law_of"
       ],
 
-      group2: [
+      business: [
           "succeeded_by",
           "took_over_from",
           "owned_by",
@@ -143,41 +143,41 @@ let linkTypes_grouped = {
           "partnership"
       ],
 
-      group3: [
+      location: [
           "same_premises_as" 
       ],
 
-      group4: [
+      employment: [
           "employed_by",
           "worked_for"
       ],
 
-     group5: [
+     guild: [
           "apprenticed_to",
           "had_apprentice"
       ],
 
-      group6: [
+      agent: [
           "agent_to",
           "supplied_to",
           "supplied_to",
           "supplied_by"
       ],
 
-      group7: [
+      subcontract: [
         "subcontractor_to"
       ],
 
-      group8: [
+      personal: [
          "fellow_apprentice_of",
           "friend_of"
       ],
 
-      group9: [
+      financial: [
           "_creditor_of"
       ],
 
-      group10: [
+      undefined: [
         "see_also",
         "associated_with"
       ]
