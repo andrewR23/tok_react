@@ -115,6 +115,77 @@ allmakers.forEach((maker) => {
 ]
 
 
+
+let linkTypes_grouped = {
+
+      group1: [
+          "child_of",
+          "sibling_of",
+          "spouse_of",
+          "parent_of",
+          "nephneice_of",
+          "unknown_relation",
+          "cousin_of",
+          "uncaunt_of",
+          "grandchild_of",
+          "son-in-law_of",
+          "stepchild_of",
+          "step-parent_of",
+          "father-in-law_of",
+          "brother-in-law_of"
+      ],
+
+      group2: [
+          "succeeded_by",
+          "took_over_from",
+          "owned_by",
+          "owner_of",
+          "partnership"
+      ],
+
+      group3: [
+          "same_premises_as" 
+      ],
+
+      group4: [
+          "employed_by",
+          "worked_for"
+      ],
+
+     group5: [
+          "apprenticed_to",
+          "had_apprentice"
+      ],
+
+      group6: [
+          "agent_to",
+          "supplied_to",
+          "supplied_to",
+          "supplied_by"
+      ],
+
+      group7: [
+        "subcontractor_to"
+      ],
+
+      group8: [
+         "fellow_apprentice_of",
+          "friend_of"
+      ],
+
+      group9: [
+          "_creditor_of"
+      ],
+
+      group10: [
+        "see_also",
+        "associated_with"
+      ]
+
+}
+
+
+
 // -- GET LISTS of the ATTRIBUTE names (in some makers) -- // 
   const guilds = [...new Set(someMakers.map(maker => maker.guilds).flat())]; 
   const adv_instruments = [...new Set(someMakers.map (maker => maker.advertised_instruments).flat( ))]; 
@@ -262,7 +333,7 @@ export {social_Clusters}
 export {guild_Groups}
 export {town_Groups}
 export {rowsDataset} ;// sorted rows 
-export {linkTypes}
+export {linkTypes_grouped}
 
 // export links.. 
 //export {base_links}

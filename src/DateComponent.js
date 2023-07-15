@@ -18,7 +18,7 @@ const dateScaleRef = useRef(null);
 
   useEffect(()=> { 
       svg = d3.select(chartRef.current)
-     console.log ('date range!! = ', daterange)
+     //console.log ('date range!! = ', daterange)
 
       dateScaleRef.current = d3.scaleLinear()
 
@@ -93,7 +93,7 @@ const dateScaleRef = useRef(null);
 
 
 return (
-    <g ref={chartRef} transform="translate(0, 100) scale(1)"></g>
+    <g ref={chartRef} transform="translate(0, 100) scale(0.9)"></g>
   );
 
 };

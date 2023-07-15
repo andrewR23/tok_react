@@ -15,7 +15,7 @@ import { social_Clusters } from './data.js' // social clusters
 import { guild_Groups} from './data.js'
 import { town_Groups} from './data.js'
 import { rowsDataset } from './data.js'
-import { linkTypes } from './data.js'
+import { linkTypes_grouped } from './data.js'
  // import { base_links } from './data.js'
 
 
@@ -29,10 +29,14 @@ const handleDataDump = () => {
 //handleDataDump( )
 
 // -- bar chart vis  -- // 
-import ForceDirectComponent   from './ForceDirectComponent'; // v2 working v3 working v5 working
+import ForceDirectComponent   from './ForceDirectComponent'; // v2 working v3 working v5 working v6 working
 import BarsComponent   from './BarsComponent';
 import LinkComponent   from './LinkComponent';
 import DateComponent   from './DateComponent';
+import KeyComponent   from './KeyComponent';
+
+import SimpleTable   from './SimpleTable';
+
 
 
 import './styles.css'; // Import your custom CSS file
@@ -49,7 +53,7 @@ const App = () => {
   // -- maker data -- // 
   const [makers, setMakers] = useState ([ ]);         // the selection of makers to use 
 
-  const [linktypes, setLinkTypes]= useState ( linkTypes); 
+  const [linkGroups, setLinkTypes]= useState ( linkTypes_grouped); 
   const [socialGroups, setSocialGroups] = useState (social_Clusters )
   const [townGroups, setTownGroups] = useState (town_Groups)
   const [guildGroups, setGuildGroups] = useState (guild_Groups)
@@ -64,7 +68,10 @@ const App = () => {
  // -- slider range and layout -- // 
   const [dateRange, setDateRange] =   useState([1680, 1760, 1900]); // range value -- //
   const [sizeRange, setSizeRange] = useState([5, 20]); // range for size of groups -- // 
-  const [yRange, setYRange] = useState([50, 900]); // range for size of groups -- // 
+  
+  //const [yRange, setYRange] = useState([50, 900]); // range for size of groups -- // 
+
+  const [sliderState, setSliderState]= useState(false)
 
 
   const [layout, setLayout] = useState ('grid'); // set state for layout
@@ -74,7 +81,7 @@ const App = () => {
 
   // ---------------------- // 
   // -- rows data set is the result of the query.. the 
-  console.log ('rows data', rowsDataset) // -- rows data set contains the results of the selection.. 
+  // -- console.log ('rows data', rowsDataset) // -- rows data set contains the results of the selection.. 
 
   let allselected = rowsDataset[0].makers;  // the root (inital)
   let flowselected = rowsDataset[rowsDataset.length-1].makers; // the paths (narrow)
@@ -163,9 +170,14 @@ const App = () => {
 
 
   // -- on slider move -- update makers by time range -- 
+  const handleSliderStart = ( ) => { 
+        setSliderState (true)
+
+  }
   const handleSliderChange = (event, range) => {
       setDateRange(range)       // set date range state
       filterMakersByDate(range)    // update  makers (nodes) by date range  
+
 
       //filterDatesTest(range)
   };
@@ -175,6 +187,8 @@ const App = () => {
       filterSocialGroups( )       // filter social groups -by makers selection
       filterTownGroups ( );
       filterGuildGroups ( ); 
+
+      setSliderState(false)
       //updateBarData( );
       //console.log ('slider range ', dateRange)
 
@@ -197,6 +211,7 @@ const App = () => {
   }
 
   // -- y pos slider -- //
+
   const handleYSlider_change = (event, range) => { 
     setYRange(range)
   }
@@ -571,6 +586,8 @@ return (
       <Button variant="text" onClick={() => setLayoutState('date')}>date</Button>
       <Button variant="text" onClick={() => handleResetBtn()}>reset</Button>
 
+      {/*<SimpleTable></SimpleTable>*/}
+
 
       <div className="vis-container">
         {/*<VisualizationComponent data={data} />*/}
@@ -578,10 +595,10 @@ return (
               <ForceDirectComponent 
                 data={socialGroups} 
                 selection={rowData}
-                linktypes={linktypes}
+                linkGroups={linkGroups}
                 layout={layout}
-                yRange={yRange}
                 daterange={dateRange}
+                sliderState ={sliderState}
                 selectedItem ={selectedItem}
                 onDataClick={handleDataClick}
                 onItemClick={handleItemClick}
@@ -616,7 +633,9 @@ return (
             size="small"
             value={dateRange}
             onChange={handleSliderChange}
-            onChangeCommitted={handleSliderEnd}
+            // onChangeCommitted={handleSliderEnd}
+            onMouseDown={handleSliderStart}
+            onMouseUp = {handleSliderEnd}
             getAriaLabel={() => 'date range'}
             min={1600}
             max={1920}
