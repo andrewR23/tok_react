@@ -102,7 +102,7 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
       .forceSimulation(data)
       .force('center', d3.forceCenter(1000, 500).strength(1))
       .force('charge', d3.forceManyBody().strength(1))
-      .force('collide', d3.forceCollide(d => d.nodes.length * 10+ 2));
+      .force('collide', d3.forceCollide(d => d.nodes.length * 12+ 2));
 
     // -- create child simulation -- //
     simulation_childRef.current = data.map(createChildSimulation);
@@ -117,7 +117,8 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
                             .domain([1600, 1900])
                             .range([0, 1000]);
 
-    yearScaleSize.domain([daterange[1]-50, daterange[1], daterange[1]+50]).range([4, 12, 4]); // size (min max min)
+    let yrspan = 10;                     
+    yearScaleSize.domain([daterange[1]-50, daterange[1], daterange[1]+yrspan]).range([3, 10, 3]); // size (min max min)
     //yearScaleSize.domain([daterange[1]-(daterange[1]-daterange[0]), daterange[1], daterange[1]+(daterange[2]-daterange[1])]).range([1, 10, 1]); // size (min max min)
 
 
@@ -463,7 +464,7 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
         .attr('class', 'child')
         .attr('gx', d => d.gx)
         .attr('gy', d => d.gy)
-        .attr('gr', d =>  d.gr = (Math.max (yearScaleSize(d.date_1), 0))+2)
+        .attr('gr', d =>  d.gr = (Math.max (yearScaleSize(d.date_1), 0))+3)
         .attr('transform', d => `translate(${d.gx},${d.gy})`)
 
 
@@ -475,7 +476,7 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
       smallCircle
           .transition( )
           .duration(1000)
-          .attr('r', d =>  (Math.max (yearScaleSize(d.date_1), 0))+2)
+          .attr('r', d =>  (Math.max (yearScaleSize(d.date_1), 0))+3)
             .attr ('fill', d => { 
               if (selectedMakers.current[1].makers.map (m => m.id).includes(d.id)) return 'red'
               if (selectedMakers.current[0].makers.map (m => m.id).includes(d.id)) return 'gold'
@@ -489,7 +490,7 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
           .attr ('class', 'smallCircle')
            .transition( )
             .duration(1000)
-          .attr('r', d =>  (Math.max (yearScaleSize(d.date_1), 0))+2)
+          .attr('r', d =>  (Math.max (yearScaleSize(d.date_1), 0))+3)
           .attr ('fill', d => { 
               if (selectedMakers.current[1].makers.map (m => m.id).includes(d.id)) return 'red'
               if (selectedMakers.current[0].makers.map (m => m.id).includes(d.id)) return 'gold'
@@ -676,13 +677,13 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
       simulation_childRef.current.forEach ((sim, i) => sim.nodes (data[i].nodes));
 
       // -- restart  -- if using forces -- 
-      let aStart = 0.01 ; // start point
+      let aStart = 0.1 ; // start point
       let aDecay = 0.0228; // decay rate. 
       //simulationRef.current.alpha(aStart).restart( );
-      //simulation_parentRef.current.alpha(aStart).restart( ); 
+      simulation_parentRef.current.alpha(aStart).restart( ); 
 
       simulationRef.current.restart( ); // 
-      simulation_parentRef.current.restart( ); 
+      //simulation_parentRef.current.restart( ); 
       
 
       // -- re draw  // 
@@ -877,8 +878,8 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
 
   function calcGridPos (d, i) { 
       let colNum = 15
-      let spacing = 50; //d.nodes.length*10;
-      let itemwidth =  50; //  d.nodes.length*14
+      let spacing = 70; //d.nodes.length*10;
+      let itemwidth =  70; //  d.nodes.length*14
       //console.log ('d = ', d)
 
       const column = i % colNum;
