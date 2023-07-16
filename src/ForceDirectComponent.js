@@ -102,7 +102,7 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
       .forceSimulation(data)
       .force('center', d3.forceCenter(1000, 500).strength(1))
       .force('charge', d3.forceManyBody().strength(1))
-      .force('collide', d3.forceCollide(d => d.nodes.length * 12+ 2));
+      .force('collide', d3.forceCollide(d => d.nodes.length * 14+ 2));
 
     // -- create child simulation -- //
     simulation_childRef.current = data.map(createChildSimulation);
