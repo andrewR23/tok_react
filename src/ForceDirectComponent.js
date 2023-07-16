@@ -878,7 +878,7 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
 
   function calcGridPos (d, i) { 
       let colNum = 15
-      let spacing = 70; //d.nodes.length*10;
+      let spacing = 100; //d.nodes.length*10;
       let itemwidth =  70; //  d.nodes.length*14
       //console.log ('d = ', d)
 
