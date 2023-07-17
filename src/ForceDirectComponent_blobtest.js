@@ -9,7 +9,7 @@ import * as f from './functions.js';
 
 
 
-const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, colorScale, sliderState, selectedItem, onDataClick,  onItemClick }) => {
+const ForceDirectComponent = ({ data, layout, selection, linkGroups, drawblobs, daterange, colorScale, sliderState, selectedItem, onDataClick,  onItemClick }) => {
   
   // -- dom elements -- 
   const chartRef = useRef(null);
@@ -147,6 +147,8 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
       }
 
 
+
+
       // --draw shapes -- //
       drawLinksSmall( );
       drawGroupsLarge( );
@@ -160,7 +162,7 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
       // groupLrg.on('click', scaleItem);// dblclick
 
 
-    }, [data, layout])
+    }, [data, layout, drawblobs])
 
 
   /// - use effect for interactions.. // ?? (All of them ?? )
@@ -259,9 +261,11 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
                                 } 
                                 return blobshape
                             })
-
-
-
+                            .attr('display', d => { 
+                                let display = drawblobs ? 'block' : 'none'
+                                  return display
+                            })
+                            
 
                           // blob
                           //   .transition( )
@@ -335,6 +339,10 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
         .attr('r', d => d.nodes.length * 5) 
         .attr ('fill', 'PowderBlue')
         .attr('opacity', 0.2)
+         .attr('display', d => { 
+            let display = drawblobs ? 'none' : 'block'
+            return display
+        } )
         //.attr('display', 'none')
         //.attr ('dosomething', d => console.log ("update "))
 
@@ -346,7 +354,10 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
         .attr('r', d => d.nodes.length * 5)
         .attr ('fill', 'PowderBlue')
         .attr('opacity', 0.2)
-        .attr('display', 'none')
+        .attr('display', d => { 
+            let display = drawblobs ? 'none' : 'block'
+            return display
+        } )
 
         //.attr ('dosomething', d => console.log ("enter ")
 
@@ -462,6 +473,7 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
             })
           .attr('fill', 'gold')
           .attr('opacity', 0.5)
+
 
 
 
@@ -581,6 +593,13 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
 
   // ------------------- // 
 
+  function toggleBlobs ( ) { 
+       // turn large circles on 
+      largeCircle = groupLrg.selectAll('.largeCircle').attr('display', 'block')
+      // turn blobs off 
+      const allblobs = d3.selectAll ('.grpLarge .childlinkGrp .blobpath').attr('display', 'none')
+  }
+
   function forceLayout ( ) { 
       //console.log ("do force layout..")
       // -- create simulation
@@ -611,11 +630,7 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
 
 
   function dateLayout ( ) { 
-      // turn on large circles - turn off 
-      largeCircle = groupLrg.selectAll('.largeCircle').attr('display', 'block')
-      const allblobs = d3.selectAll ('.grpLarge .childlinkGrp .blobpath').attr('display', 'none')
-
-
+   
         //console.log(childLinkGroup.size()); // Check the number of selected elements
         //console.log(childLinkGroup.nodes()); // Log the array of selected DOM nodes
         //console.log (childLinkGroup.transition( ))
@@ -697,6 +712,10 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
                                     blobshape = f.createPathShape(sourceloc, targetloc, radius);  
                                 } 
                                 return blobshape
+                            })
+                            .attr('display', d => { 
+                                let display = drawblobs ? 'block' : 'none'
+                                  return display
                             })
 
                           // -- UPDATE PATHS position -- TWEEN -- // paths --
@@ -1070,12 +1089,17 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
   }
 
   function restoreAllColours () { 
-
+    //console.log ('restore all colours')
     const allgroups = d3.selectAll ('.grpLarge'); // get all groups in the DOM
 
     // -- turn on all blobs -- 
-    const allblobs = d3.selectAll ('.grpLarge .childlinkGrp .blobpath')
-    allblobs.style("display", "block");
+    //const allblobs = d3.selectAll ('.blobpath').attr ('display', 'block')
+    // allblobs.attr('display', d => { 
+    //         let display = drawblobs ? 'block' : 'none'
+    //         return display
+    // })
+
+    // allblobs.style("display", "block");
         //let scale = 1.0
 
         allgroups.each (function (g,i){ 
@@ -1084,6 +1108,7 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
             let paths = d3.select (this).selectAll ('.childlinkGrp path');
             let text = d3.select (this).selectAll ('.child text');
             let largeCircle = d3.select (this).selectAll ('.largeCircle');
+            let blob = d3.select(this).selectAll('.childlinkGrp .blobpath')
 
 
             // ---- 
@@ -1106,13 +1131,14 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
             .attr ('r', d => d.nodes.length* 5)
             .attr ('cx', 0)
             .attr ('cy', 0)
+            .attr('display', d => { 
+                  let display = drawblobs ? 'none' : 'block'
+                  return display
+            })
 
-            // get the 
+            // -- ?? -- // 
+            blob.attr('display', 'block').attr ('fill', 'black')
 
-            //let grp = d3.select(this)
-              //  .transition( )
-                //.duration(2000)
-                //.attr('transform', d => (`translate(${d.gx}, ${d.gy}) scale(1.0)`))
 
         })
 

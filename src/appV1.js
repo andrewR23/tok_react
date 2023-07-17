@@ -99,6 +99,7 @@ const App = () => {
 
 
   const [layout, setLayout] = useState ('grid'); // set state for layout
+  const [drawblobs, setDrawBlobs] = useState (false)
 
 // -- selected item -- 
   const [selectedItem, setSelectedItem] = useState( ); // single item that has been selected.. 
@@ -336,6 +337,11 @@ const App = () => {
 
   function setLayoutState (layoutState) { 
       setLayout (layoutState)
+   }
+
+   function handleDrawBlobs ( ) { 
+
+      setDrawBlobs (!drawblobs)
    }
 
 
@@ -661,6 +667,8 @@ return (
             <Button variant="text" onClick={() => setLayoutState('force')}>force</Button>
             <Button variant="text" onClick={() => setLayoutState('date')}>date</Button>
             <Button variant="text" onClick={() => handleResetBtn()}>reset</Button>
+            <Button variant="text" onClick={() => handleDrawBlobs()}>blobs</Button>
+
           </ThemeProvider>
 
           <div className="vis-container" style={{position: 'absolute', left: '0px', top: '100px', transform: 'scale(0.5)', transformOrigin: '0% 0%' }}>
@@ -674,6 +682,7 @@ return (
                     linkGroups={linkGroups}
                     colorScale = {colorScale}
                     layout={layout}
+                    drawblobs={drawblobs}
                     daterange={dateRange}
                     sliderState ={sliderState}
                     selectedItem ={selectedItem}
