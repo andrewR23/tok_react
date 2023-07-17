@@ -50,15 +50,10 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
   // -- clicked group -- 
   let selectedGroup = useRef(null)
   let selectedMakers = useRef (selection)
-  let hasScaled = false; 
+  let hasScaled = false;  // ??
 
 
-  // -- 
-  // let scaleRef = useRef(2); 
-  // let translateRef  = useRef ([300, 300])
-  // -- updated when data is updated // 
   // -- init - create forces  -- //
-
   function createChildSimulation(d) {
         const simulation = d3.forceSimulation(d.nodes)
             .force("center", d3.forceCenter(0, 0).strength(1)) // Adjust center as needed
@@ -70,29 +65,6 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
 
   // --- USE EFFECT -- // 
   useEffect(() => { 
-
-      // svg = d3.select(chartRef.current)
-
-      // const colourKey = svg.append("svg").append ('g')
-      //     .attr("class", "legend")
-      //     .attr("width", 100)
-      //     .attr("height", 50)
-      //     .attr("transform", "translate(10, 100)"); // Adjust the positioning as needed
-
-      // const keyItems = colourKey.selectAll(".legend-item")
-      //     .data(colourkeys)
-      //     .enter()
-      //     .append("g")
-      //     .attr("class", "legend-item")
-      //     .attr("transform", (d, i) => `translate(20, ${i * 20 })`);
-
-      // keyItems.append("rect")
-      //     .attr("x", 0)
-      //     .attr("y", 0)
-      //     .attr("width", 16)
-      //     .attr("height", 16)
-      //     .style("fill", (d, i) => colourvals[i]);
-
 
     // -- create a parent ref for the child nodes 
     simulation_parentRef.current= d3.forceSimulation( );
@@ -125,9 +97,7 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
 
   }, [ ])
 
-  // -- 
   // -- forces between children -- // 
-
   // -- on data AND layout update -- 
   useEffect (() => { 
       //console.log ('incoming data  =', data)
@@ -153,43 +123,10 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
 
       //----------------------------------//
 
-
       // this should not be in two places..!
       yearScaleSize.domain([daterange[1]-50, daterange[1], daterange[1]+50]).range([4, 12, 4]); // size (min max min)
-
-      //yearScaleSize.domain([daterange[1]-(daterange[1]-daterange[0]), daterange[1], daterange[1]+(daterange[2]-daterange[1])]).range([1, 10, 1]); // size (min max min)
-
-
       // set size of date scale
       dateScaleRef.current.domain([daterange[0], daterange[2]]).range ([0, 1000]) ; // y pos 
-
-      // ------------------------------ // 
-      // -- DATE RANGE -- // 
-      // set the size of the node according to date -- 
-  
-
-
-      // //let c = svg.append('circle').attr('cx', 100).attr('cy', 100).attr('r', 100)
-      // /// -- this sort of works -- // 
-      // //yAxis = d3.axisLeft(dateScaleRef.current);
-      // //yAxisGroup = svg.append("g").attr('class', 'yaxis').attr("transform", `translate(${100}, ${0})`).call(yAxis);
-      // // ----------------------------//
-
-
-      // //--  Select or create the y-axis group
-      // let yAxisGroup = svg.select('.yaxis');
-      // if (yAxisGroup.empty()) {
-      //   yAxisGroup = svg.append('g').attr('class', 'yaxis');
-      // }
-
-      // // Update the y-axis
-      // const yAxis = d3.axisLeft(dateScaleRef.current)
-      //    //.tickValues(d3.timeYears(new Date(1600, 0, 1), new Date(1920, 0, 1))) // Set the tick values
-      //   // .tickFormat(d3.timeFormat('%Y')); // Format ticks as years
-   
-      // yAxisGroup.attr('transform', `translate(${50}, ${20})`).call(yAxis);
-      // -- END DATE RANGE -- // 
-
 
 
       if (layout == 'force') {
@@ -205,29 +142,18 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
       }
 
 
-
-
       // --draw shapes -- //
       drawLinksSmall( );
       drawGroupsLarge( );
       drawGroupsSmall( );
 
-      //-- interaction -- //
+      // -- interaction -- //
       // groupSmall.on('click', handleClick);// 
       // - when clicked -add item to 'selected'
       // groupLrg.on('click', handleClickedGroup); 
+      // window.addEventListener('click', resetScale); 
+      // groupLrg.on('click', scaleItem);// dblclick
 
-     // window.addEventListener('click', resetScale);
-       
-     // groupLrg.on('click', scaleItem);// dblclick
-
-
-
-
-      // --- // 
-      // groupLrg.on('click', function() {
-      //     //  onItemClick(this);  // update as selected item. 
-      // });
 
     }, [data, layout])
 
@@ -254,36 +180,6 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
 
   }), [ sliderState]
 
-
-  // for yRange only ?? -- not working independently yet.. 
-      // useEffect(() => {
-      //     dateScaleRef.current.range ([yRange[0], yRange[1]])
-      //     // drawGroupsLarge( );
-      //     // drawGroupsSmallV2( );
-      //     // drawLinksSmall2( );
-      //   }, [yRange]);
-
-
-
-  // /// -- update / move selected items 
-
-  // useEffect(()=> { 
-    //   // svg = d3.select(chartRef.current)
-    //   // groupLrg = svg.selectAll('.grpLarge').data(data);
-    //   // groupSmall = groupLrg.selectAll('.child').data(d => d.nodes)
-
-    //   // groupSmall.transition( )
-    //   //   .duration(2000)
-    //   //   .tween ('groupmove', groupTween) 
-    //   //   .attr("transform", 'scale(1.0)');
-
-    //   // update selected item.. 
-    //     select(selectedItem).transition( )
-    //       .duration(2000)
-    //       .tween ('groupmove', groupTween) 
-    //       .attr("transform", 'scale(2.2)');
-
-    //  },  [selectedItem])
 
 
   // ---------------------- // 
@@ -435,15 +331,6 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
     //largeCircle.exit()
       //  .remove();
     // ---------------------- //
-
-    // LINK lines -- ///
-    // const link = svg.selectAll("link")
-    //   .data(links)
-    //   .enter()
-    //   .append("line")
-    //   .attr('class', 'link')
-    //   .style("stroke", "#999")
-    //   .style("stroke-width", "1px");
 
 
   }
@@ -610,14 +497,6 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
       //console.log ("link group ...")
       // -- get ALL the lines (nodes) inside this group -- // 
       let childLines = d3.select(this).node( ).childNodes; 
-
-      // -- each group represent a link between two nodes. 
-      // -- each group may have several lines which 
-      // get curve -- 
-      //console.log ('..line tweening...' )
-      //if (d.curve != null) console.log ('curve = ', d.curve)
-      //console.log ('this group - parent , ', d3.select(this).node( ).parentNode); 
-      //console.log ('selected group ', selectedGroup.current);
 
       // if this line connection is in the selected group : then set its curve..
       let lineParent = d3.select(this).node( ).parentNode; 
@@ -823,17 +702,17 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
   function gridLayout ( ) { 
       
         // start child forces - 
-        //simulation_childRef.current.forEach (d => d.on('tick', tick_smallGroups)); 
+        // simulation_childRef.current.forEach (d => d.on('tick', tick_smallGroups)); 
         simulation_parentRef.current.restart( ); // .alpha(0.2)
         simulation_parentRef.current.on ('tick', tick_small)
 
 
 
-        //tick_smallGroups( )
-        //simulation_childRef.current.forEach (sim => sim.stop( ))
-        //simulation_childRef.current[0].on("tick", (tick_smallGroups))
+        // tick_smallGroups( )
+        // simulation_childRef.current.forEach (sim => sim.stop( ))
+        // simulation_childRef.current[0].on("tick", (tick_smallGroups))
 
-      // stop group forces// 
+        // stop group forces// 
           simulationRef.current.stop( )
 
           let n = 100
@@ -852,10 +731,9 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
               const left = column * (w + space);
               const top = row * (w + space);
 
-              //console.log ('left ', left, '    top: ', top)
+              // console.log ('left ', left, '    top: ', top)
               // object.style.left = left + 'px';
               // object.style.top = top + 'px';
-
               // container.appendChild(object);
         }
 
@@ -895,12 +773,10 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
 
   // -- SCALE -- // 
 
-
-
   // -- spread child items (circles / text) -- // 
   function spreadChildItems (selectedgroup, itemScale) { 
-        //let itemScale = 1.0
-          // -- do something with selection -- // 
+
+        // -- do something with selection -- // 
         // -- get all the circles (each inside child group)
         const childGroups = select(selectedgroup).selectAll(".child"); // child nodes (within a group element) -circle + text 
         const childLinkGroups = select(selectedgroup).selectAll(".childlinkGrp");
@@ -911,13 +787,14 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
         //console.log ('group size = ', grpSize.height)
 
 
-        // large circle // 
-         // circles.each (function (c,i){ 
-         //            let circle = d3.select(this).attr('opacity', 0.1)
-         //        })
+        // -- large circle // 
+        //  circles.each (function (c,i){ 
+        //            let circle = d3.select(this).attr('opacity', 0.1)
+        //        })
         //const largeCircle = select(this).selectAll ('.largeCircle').attr('cx', 100).attr('cy', 100).attr('opacity', 0.5).attr('r', 200) 
 
         //largeCircle.attr('r', 500)
+        
         // -- SPREAD NODES TO NEW POSITIONS -- // 
         // sort into date groups -- 
         const groupedElements = [];
@@ -997,8 +874,10 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
   // -- move and scale all (entire svg group) --  put the seleted item in the middle.. 
   function moveAndScaleAll(selectedgroup, scale) { 
 
-        let grpSize = select(selectedgroup).node( ).getBoundingClientRect( );
-        //console.log ('group size = ', grpSize.height)
+      let grp = select(selectedgroup).node( )
+
+        let grpSize = grp.getBoundingClientRect( );
+        console.log ('group size = ', grpSize)
         let targetHeight = 500; // scale to a target height 
         let grpScale =  targetHeight / grpSize.height;  
         scale = Math.min (grpScale, 2.5); //constrain the scale value; 
@@ -1025,6 +904,25 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
         .duration(1500)
         .attr ('transform', `translate(${tx}, ${ty}), scale(${scale})`); 
 
+        // -- change  large circle  - move around the group -- 
+        //let groupNode = select(selectedgroup).node( )
+        let largeCircle = select(grp).selectAll ('.largeCircle').node( )
+
+        //console.log ('large Circle = ', select (largeCircle).node( ))
+
+        d3.select (largeCircle)
+                .transition( )
+                .duration(1000)
+                .style ('opacity', 0.05)
+                .style ('fill', 'white')
+                .attr('cx', grpSize.width)
+                .attr('cy', grpSize.height)
+                .attr('r',  grpSize.height*1.5)
+
+        
+      
+
+
     }
 
   // --- change scale of group and fade out others -- 
@@ -1040,6 +938,7 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
             let circles = d3.select (this).selectAll ('.child circle');
             let paths = d3.select (this).selectAll ('.childlinkGrp path');
             let text = d3.select (this).selectAll ('.child text');
+            let largeCircle = d3.select(this).select('.largeCircle')
 
             // -- if this group is NOT selected  FADE OUT-- // 
             if (this != selected) { 
@@ -1055,6 +954,8 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
                 text.each (function (p, i){ 
                     let text = d3.select(this).style('visibility', 'hidden')
                 })
+
+                largeCircle.transition().duration(1000).style('opacity', 0.01)
 
                 let grp = d3.select(this)
                     .transition( )
@@ -1144,6 +1045,8 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
             let circles = d3.select (this).selectAll ('.child circle');
             let paths = d3.select (this).selectAll ('.childlinkGrp path');
             let text = d3.select (this).selectAll ('.child text');
+            let largeCircle = d3.select (this).selectAll ('.largeCircle');
+
 
             // ---- 
             circles.each (function (c,i){ 
@@ -1157,6 +1060,14 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
             text.each (function (p, i){ 
                 let text = d3.select(this).style('visibility', 'hidden')
             })
+
+            // large circle - restore position --
+            largeCircle.transition( ).duration(1000)
+            .style('fill', 'PowderBlue')
+            .style('opacity', 0.1)
+            .attr ('r', d => d.nodes.length* 5)
+            .attr ('cx', 0)
+            .attr ('cy', 0)
 
             //let grp = d3.select(this)
               //  .transition( )
@@ -1172,14 +1083,10 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
 
 
 
-
-
-
-
 // ---------------------------- // 
 // -- CLICKS interactions -- // 
 
-  function handleClickedGroup ( ) { 
+function handleClickedGroup ( ) { 
       selectedGroup.current= this; 
 
       let itemScale = 1.0
@@ -1188,12 +1095,12 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
       spreadChildItems (selectedGroup.current, 1); // child items
       fadeGroupsScaleItem (selectedGroup.current, 1) // fade others and scale selected 
       moveAndScaleAll(selectedGroup.current, 1); // move everything based on group click -- // 
-      //hasScaled = true;
+
       hasScaled = true;
       event.stopPropagation(); // prevent window click --
   }
 
-  function handleClickedWindow(event) {
+function handleClickedWindow(event) {
     //console.log ("window is clicked ")
 
     //console.log (selectedGroup)
@@ -1221,9 +1128,7 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
   }
 
 
-  // ------------------- // 
-
-  const handleClick = (event, d) => {
+const handleClick = (event, d) => {
         // Handle click event here
         console.log('Clicked on bar:', event); // how do I send this data back to the main app ? 
         onDataClick(d);
@@ -1232,25 +1137,6 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
 
 
 
-// -- THIS HAS BEEN MOVED -- ///
-    // function createCurvePath (x1, y1, x2, y2, i, curveAmt) { 
-    //     let v0 = new Vec2D (x1, y1);
-    //     let v1 = new Vec2D (x2, y2);
-    //     let diffVector = v1.subtract (v0);
-    //     let dist = diffVector.magnitude( );
-    //     let midPoint = v0.add (diffVector.multiply (new Vec2D (0.5, 0.5)));
-    //     let norm = diffVector.clone( ).normalize( ) 
-    //     let ang = diffVector.angleDeg( )
-    //      // -- add perp points.. (90 degrees from midpoint) -- // 
-    //     let pLength = dist * (i * curveAmt); // dist * 0.2; // (dist * i* 0.5) +1; // (i*.2); 
-    //     let pDirection = i%2 == 0 ? 90 : -90
-    //     let perp= norm.clone( ).rotateDeg(pDirection).multiply (new Vec2D(pLength, pLength)).add (midPoint);
-    //     // -- calculate control points -- // 
-    //     let cpX = perp.x; 
-    //     let cpY = perp.y;
-    //     let curve = curve2([[x1, y1], [cpX, cpY], [x2, y2]])
-    //     return curve;
-    // }
 
 
 // -- RETURN -- // 
@@ -1264,6 +1150,32 @@ return (
 
 
 export default ForceDirectComponent;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
