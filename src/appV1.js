@@ -11,6 +11,11 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { grey } from '@mui/material/colors';
+import { blueGrey } from '@mui/material/colors';
+
+
 // -- get data (sorted and clustered) -- // 
 import { base_nodes } from './data.js'; // base makers.. 
 import { social_Clusters } from './data.js' // social clusters 
@@ -21,14 +26,25 @@ import { linkTypes_grouped } from './data.js'
  // import { base_links } from './data.js'
 
 
+const guitheme = createTheme({
+  palette: {
+    primary: {
+      main: blueGrey[200],
+    },
+    secondary: {
+      main: '#11cb5f',
+    },
+  },
+});
+
+
 const handleDataDump = () => {
   const data = JSON.stringify({ social_Clusters }, null, 2);
   const blob = new Blob([data], { type: 'text/plain;charset=utf-8' });
   saveAs(blob, 'dataDump.txt');
 };
 
-
-//handleDataDump( )
+// handleDataDump( )
 
 // -- bar chart vis  -- // 
 import ForceDirectComponent   from './ForceDirectComponent'; // v2 working v3 working v5 working v6 working
@@ -36,7 +52,7 @@ import BarsComponent   from './BarsComponent';
 import LinkComponent   from './LinkComponent';
 import DateComponent   from './DateComponent';
 import ColorKeyComponent   from './ColorKeyComponent';
-import SimpleTable   from './SimpleTable';
+import MakerTable   from './MakerTable';
 
 
 
@@ -63,6 +79,10 @@ const App = () => {
   const socialGroups_base = [...social_Clusters];//
 
   const [rowData, setRowData] = useState (rowsDataset)
+
+  // -- get the total of makers selected and shared (flow) from the query 
+  const [selectedMakers, setSelectedMakers] = useState(null)
+  const [flowMakers, setFlowMakers] = useState (null)
 
  // const [socialLinks, setSocialLinks] = useState(base_links)
 
@@ -118,7 +138,8 @@ const App = () => {
 
     //console.log('colorScale domain NEW:', colorScale.domain());
 
-
+    let total_flow = [ ];
+    let total_selected = [ ]
 
   // - log -- 
 
@@ -128,23 +149,27 @@ const App = () => {
    const renderBarComponents = () => {
     // -- get an update of bar data - 
     updateBarData( ); 
-    // -- render rows 
+    // -- render rows -- 
     return rowsDataset.map((rowData, index) => {
+          //console.log ('update bars -- ', rowData)
         let sourceData = rowData.query.att === 'towns' ? townGroups : guildGroups;
         return (<BarsComponent key={index} data={sourceData}index={index} onData={handleBarData} />)
     })
+
 
   };
 
   // -- // 
 
   function updateBarData ( ) { 
-    /// updates and sorts the data in each group.
+    /// -- updates and sorts the data in each group.
+    // -- extract  totals of selected and flow makers in each group -- // 
     rowsDataset.map((rowData, index) => {
             let sourceData = rowData.query.att === 'towns' ? townGroups : guildGroups;
 
+  
             // -- get nodes in each group and compare to row selection -- // 
-            sourceData.forEach (sourceGroup => { 
+            sourceData.forEach ((sourceGroup, i) => { 
                 // 1. sort nodes into three groups
                 let flow = [ ]; //this_row_selected = [ ]; // found in this 
                 let paths = [ ]; //prev_row_selected = [ ]; 
@@ -166,12 +191,27 @@ const App = () => {
                 sourceGroup.nodes_sorted [1]= paths; 
                 sourceGroup.nodes_sorted [2]= none; 
                 // -- log results -- // 
-                // console.log ('prev row selected  London + Not Clock (other guild)',  paths)
-                // console.log ('this row selected: Clock + London ',  flow)
-                // console.log ('not  selected: Not London  :  ',  none)
-                // console.log ('all makers ', sourceGroup.nodes)
+
+                // add all the 'paths' into top row
+                if (index == 0){ 
+                   total_selected.push(...flow)
+                   total_selected = [...new Set(total_selected)];// a set can only contain unique items
+
+
+                }
+                if (index == 1) {                    
+                    total_flow.push (...flow)
+                    total_flow = [...new Set(total_flow)];
+
+                }
         })
+      
     })
+
+    //setSelectedMakers (total_selected)
+    //setFlowMakers (total_flow)
+
+
   }
 
 
@@ -193,11 +233,20 @@ const App = () => {
   const handleSliderStart = ( ) => { 
         setSliderState (true)
 
+
   }
   const handleSliderChange = (event, range) => {
       setDateRange(range)       // set date range state
       filterMakersByDate(range)    // update  makers (nodes) by date range  
 
+      console.log ('total selected = ', total_selected)
+      console.log ('total flow = ', total_flow)
+      setSelectedMakers (total_selected)
+      setFlowMakers (total_flow)
+
+
+
+     // console.log ('all makers = ', makers)
 
       //filterDatesTest(range)
   };
@@ -208,9 +257,14 @@ const App = () => {
       filterTownGroups ( );
       filterGuildGroups ( ); 
 
+      //console.log ('total selected = ', total_selected)
+
+
       setSliderState(false)
       //updateBarData( );
       //console.log ('slider range ', dateRange)
+
+
 
   }
 
@@ -599,102 +653,86 @@ const App = () => {
 
   // ----- JSX ---- // 
 return (
-    <div>
+    <div className="wrapper"style={{ backgroundColor: '#4d4d4d', width : '100%', height :'700px' }}>
       {/*<h3>ToK into React</h3>*/}
-      <Button variant="text" onClick={() => setLayoutState('grid')}>grid</Button>
-      <Button variant="text" onClick={() => setLayoutState('force')}>force</Button>
-      <Button variant="text" onClick={() => setLayoutState('date')}>date</Button>
-      <Button variant="text" onClick={() => handleResetBtn()}>reset</Button>
 
-      {/*<SimpleTable></SimpleTable>*/}
+          <ThemeProvider theme={guitheme}>
+            <Button className="custom-button" variant="text" onClick={() => setLayoutState('grid')}>grid</Button>
+            <Button variant="text" onClick={() => setLayoutState('force')}>force</Button>
+            <Button variant="text" onClick={() => setLayoutState('date')}>date</Button>
+            <Button variant="text" onClick={() => handleResetBtn()}>reset</Button>
+          </ThemeProvider>
 
+          <div className="vis-container" style={{position: 'absolute', left: '0px', top: '100px', transform: 'scale(0.5)', transformOrigin: '0% 0%' }}>
+            {/*<VisualizationComponent data={data} />*/}
+            <svg width={3000} height={1200} transform="translate(0, 0) scale(1)">
+                 
 
-      <div className="vis-container">
-        {/*<VisualizationComponent data={data} />*/}
-        <svg width={2000} height={2000} transform="translate(-220, -170) scale(0.75)">
-              <ForceDirectComponent 
-                data={socialGroups} 
-                selection={rowData}
-                linkGroups={linkGroups}
-                colorScale = {colorScale}
-                layout={layout}
-                daterange={dateRange}
-                sliderState ={sliderState}
-                selectedItem ={selectedItem}
-                onDataClick={handleDataClick}
-                onItemClick={handleItemClick}
-                />
+                  <ForceDirectComponent 
+                    data={socialGroups} 
+                    selection={rowData}
+                    linkGroups={linkGroups}
+                    colorScale = {colorScale}
+                    layout={layout}
+                    daterange={dateRange}
+                    sliderState ={sliderState}
+                    selectedItem ={selectedItem}
+                    onDataClick={handleDataClick}
+                    onItemClick={handleItemClick}
+                    />
 
-                <DateComponent daterange={dateRange} layout={layout}/>
-                <ColorKeyComponent colorScale={colorScale} linkGroups={layout}/>
+                    <DateComponent daterange={dateRange} layout={layout}/>
+                    <ColorKeyComponent colorScale={colorScale} linkGroups={layout}/>
 
-              
+                  {/*{generateRowComponents()}*/}
+                  {/*<LinkComponent linkdata={linkState} pathlinkdata={linkStatePaths} flowlinkdata={linkStateFlows} onData={handleChildData} />*/}
+                  {renderBarComponents()}
+            </svg>
+            <MakerTable selectedmakers={selectedMakers} flowmakers={flowMakers}></MakerTable>
 
-              {/*{generateRowComponents()}*/}
-              {/*<LinkComponent linkdata={linkState} pathlinkdata={linkStatePaths} flowlinkdata={linkStateFlows} onData={handleChildData} />*/}
-              {renderBarComponents()}
+          </div>
+          
+          <div className="slider-container">
+          <ThemeProvider theme={guitheme}>
+           <Slider
+                size="small"
+                value={dateRange}
+                onChange={handleSliderChange}
+                // onChangeCommitted={handleSliderEnd}
+                onMouseDown={handleSliderStart}
+                onMouseUp = {handleSliderEnd}
+                getAriaLabel={() => 'date range'}
+                min={1600}
+                max={1920}
+                step={1}
+                valueLabelDisplay="on"
+            />
+            </ThemeProvider>
 
-    
-         {/*     <BarsComponent
-                data={townGroups} 
-                ypos={10}
-                type={'location'}
-              />*/}
-              {/*  
-                <BarsComponent
-                data={guildGroups} 
-                ypos={70}
-                type={'guilds'}
-              />*/}
+          {/*<Slider
+                size="small"
+                value={sizeRange}
+                onChange={handleSizeSlider_change}
+                onChangeCommitted={handleSizeSlider_end}
+                getAriaLabel={() => 'number range'}
+                min={1}
+                max={50}
+                step={1}
+                valueLabelDisplay="on"
+            />*/}
 
-
-        </svg>
-      </div>
-      
-      <div className="slider-container">
-       <Slider
-            size="small"
-            value={dateRange}
-            onChange={handleSliderChange}
-            // onChangeCommitted={handleSliderEnd}
-            onMouseDown={handleSliderStart}
-            onMouseUp = {handleSliderEnd}
-            getAriaLabel={() => 'date range'}
-            min={1600}
-            max={1920}
-            step={1}
-            valueLabelDisplay="on"
-        />
-
-      {/*<Slider
-            size="small"
-            value={sizeRange}
-            onChange={handleSizeSlider_change}
-            onChangeCommitted={handleSizeSlider_end}
-            getAriaLabel={() => 'number range'}
-            min={1}
-            max={50}
-            step={1}
-            valueLabelDisplay="on"
-        />*/}
-
-    {/*    <Slider
-            size="small"
-            value={yRange}
-            onChange={handleYSlider_change}
-            // onChangeCommitted={handleYSlider_end}
-            getAriaLabel={() => 'Y range'}
-            min={100}
-            max={400}
-            step={1}
-            valueLabelDisplay="on"
-        />*/}
-      </div>
-
-
-
-  
-   
+        {/*    <Slider
+                size="small"
+                value={yRange}
+                onChange={handleYSlider_change}
+                // onChangeCommitted={handleYSlider_end}
+                getAriaLabel={() => 'Y range'}
+                min={100}
+                max={400}
+                step={1}
+                valueLabelDisplay="on"
+            />*/}
+          </div>
     </div>
   );
   // -------------------------// 

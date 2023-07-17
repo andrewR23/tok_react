@@ -64,7 +64,7 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
             .force("center", d3.forceCenter(0, 0).strength(1)) // Adjust center as needed
             .force("collide", d3.forceCollide(30)) // Adjust radius as needed
             //.force("charge", d3.forceManyBody().strength(-10)) // Adjust strength as needed
-            .force("link", d3.forceLink(d.links).id(d => d.id).distance(35)); // link FORCCE..(set link to closeness in date ? ) 
+            .force("link", d3.forceLink(d.links).id(d => d.id).distance(30)); // link FORCCE..(set link to closeness in date ? ) 
         return simulation;
   }
 
@@ -515,7 +515,7 @@ const ForceDirectComponent = ({ data, layout, selection, linkGroups, daterange, 
               let titlecase = d.name.charAt(0).toUpperCase() +d.name.substring(1).toLowerCase();
               return titlecase;
           })
-          .style('fill', 'DimGray')
+          .style('fill', '#cfd8dc') // material bluegrey 100
           .style('font-size', '10px')
           .style('text-transform', 'lowercase')
           .style('text-transform', 'capitalize')

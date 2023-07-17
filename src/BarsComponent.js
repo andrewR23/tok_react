@@ -28,7 +28,7 @@ const BarsComponent = ({ data, index, onData }) => {
   useEffect(() => {
     // --  draw bar chart 
     // -- add interaction -- //
-    console.log ('bar data is updated ..  .', data); 
+    //console.log ('bar data is updated ..  .', data); 
     type = data[0].type.replace('cluster', '');
    // console.log ('type = ', type)
 
@@ -56,6 +56,8 @@ function drawBlocks ( ) {
     //console.log ('draw block')
     let svg = d3.select(svgRef.current)
     block  = svg.selectAll ('.block').data (data)
+
+    //block.append ('rect').attr('x', 100).attr('y', 100).attr('width', 100).attr('height', 40).attr('fill', 'white')
 
     // -- Draw A Block for each data item 
     // -- update --  //I think this should be a group -- 
@@ -228,8 +230,8 @@ function findBlockByMaker( ) {
 
 
 return (
-    <g ref={svgRef} transform="translate(50, 0) scale(1)">
-    <text ref={headingRef}></text>
+    <g ref={svgRef} transform="translate(100, 0) scale(1.2)">
+      <text ref={headingRef} style={{ fontFamily: 'sans-serif', fontSize: '16px', fontWeight: 'light', fill: 'white' }}></text>
     </g>
   );
 

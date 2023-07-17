@@ -12,7 +12,7 @@ const DateComponent = ({ daterange, layout }) => {
   //let yAxisGroup, yAxis;
   let yAxisRef = useRef(null);
   let yAxisGroup;
-const dateScaleRef = useRef(null);
+  const dateScaleRef = useRef(null);
 
   
 
@@ -36,7 +36,7 @@ const dateScaleRef = useRef(null);
       //--  Select or create the y-axis group
       yAxisGroup = svg.select('.yaxis');
       if (yAxisGroup.empty()) {
-        yAxisGroup = svg.append('g').attr('class', 'yaxis');
+        yAxisGroup = svg.append('g').attr('class', 'yaxis')
       }
 
       // Update the y-axis
@@ -50,7 +50,7 @@ const dateScaleRef = useRef(null);
           yAxisGroup
             .transition( )
             .duration(1500)
-            .attr('transform', `translate(${40}, ${20})`)
+            .attr('transform', `translate(${80}, ${20})`)
 
       } else { 
             yAxisGroup
@@ -60,7 +60,21 @@ const dateScaleRef = useRef(null);
       }
 
       //yAxisGroup.attr('transform', `translate(${-10}, ${20})`).call(yAxis);
-      yAxisGroup.call(yAxis);
+     // yAxisGroup.call(yAxis);
+
+    yAxisGroup.call(yAxis)
+    .selectAll('.domain') // Select the main line
+    .style('stroke', '#CFD8DC'); // Set the color of the main line to red
+
+        yAxisGroup.call(yAxis)
+    .selectAll('.tick line') // Select the lines of the ticks
+    .style('stroke', '#CFD8DC'); // Set the color of the lines to red
+
+  yAxisGroup.call(yAxis)
+    .selectAll('.tick text') // Select the text labels of the ticks
+    .style('fill', '#CFD8DC') // Set the color of the text labels to red
+      .style('font-size', '20px')
+                .style('text-transform', 'lowercase')
 
 
 

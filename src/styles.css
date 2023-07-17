@@ -1,3 +1,21 @@
+
+
+ body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .wrapper {
+    margin: 0;
+    padding: 0;
+  }
+
+  
+.custom-button {
+  background-color: red; /* Set the desired background color */
+  color: white; /* Set the desired text color */
+}
+
 /* slider.css */
 
 .rc-slider {
@@ -28,7 +46,7 @@
   height: 20px;
   border: 2px solid #ff0000;
   border-radius: 50%;
-  background-color: #ffffff;
+  background-color: #fff000;
   transform: translate(-50%, -50%);
 }
 

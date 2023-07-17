@@ -28,25 +28,25 @@ const ColorKeyComponent = ({ colorScale, linkGroups  }) => {
           .enter()
           .append("g")
           .attr("class", "legend-item")
-          .attr("transform", (d, i) => `translate(20, ${i * 20 })`);
+          .attr("transform", (d, i) => `translate(20, ${i * 30 })`);
 
       keyItems.append("rect")
           .attr("x", 0)
           .attr("y", 0)
-          .attr("width", 16)
-          .attr("height", 16)
+          .attr("width", 20)
+          .attr("height", 20)
           .style("fill", (d, i) => colourvals[i]);
 
         keyItems.append("text")
-                .attr("x", 24)
-                .attr("y", 12)
+                .attr("x", 0)
+                .attr("y", 0)
                 .text(d => d)
-                .style('fill', 'DimGray')
-                .style('font-size', '10px')
+                .style('fill', '#cfd8dc')
+                .style('font-size', '16px')
                 .style('text-transform', 'lowercase')
                 .style('font-family', 'sans-serif')
                 .style('visibility', 'visible')
-                .attr('transform', 'rotate(30, 0, 0), translate(0, -10)');
+                .attr('transform', 'rotate(30, 0, 0), translate(30, 0)');
 
 
 
@@ -58,7 +58,7 @@ const ColorKeyComponent = ({ colorScale, linkGroups  }) => {
 
 
 return (
-    <g ref={chartRef} transform="translate(1600, 800) scale(1.2)"></g>
+    <g ref={chartRef} transform="translate(2100, 1000) scale(1.2)"></g>
   );
 
 };
