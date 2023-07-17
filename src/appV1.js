@@ -47,7 +47,7 @@ const handleDataDump = () => {
 // handleDataDump( )
 
 // -- bar chart vis  -- // 
-import ForceDirectComponent   from './ForceDirectComponent'; // v2 working v3 working v5 working v6 working
+import ForceDirectComponent   from './ForceDirectComponent_blobtest'; // v2 working v3 working v5 working v6 working
 import BarsComponent   from './BarsComponent';
 import LinkComponent   from './LinkComponent';
 import DateComponent   from './DateComponent';
