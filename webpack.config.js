@@ -17,7 +17,7 @@ module.exports = {
   mode: 'development',
 
   entry: {
-    index: './src/index.js',
+    index: './src/index.tsx', // Update entry file extension to .tsx
   },
 
   output: {
@@ -47,7 +47,7 @@ module.exports = {
         use: ['xml-loader'],
       },
       {
-        test: /\.(js|jsx)$/,
+        test: /\.(js|jsx|ts|tsx)$/, // Update to include .ts and .tsx files
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
@@ -57,6 +57,11 @@ module.exports = {
         },
       },
       {
+        test: /\.tsx?$/, // Add this rule for TypeScript files
+        exclude: /node_modules/,
+        use: 'ts-loader',
+      },
+      {
         test: /\.html$/,
         use: ['html-loader'],
       },
@@ -64,6 +69,6 @@ module.exports = {
   },
 
   resolve: {
-    extensions: ['.js', '.jsx'],
+    extensions: ['.js', '.jsx', '.ts', '.tsx'], // Add .ts and .tsx
   },
 };

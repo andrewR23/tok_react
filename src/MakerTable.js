@@ -1,35 +1,32 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
-import './table.css'; // Import your custom CSS file
-// import styled from 'styled-components';
+import './styles.css'; // 
 
 // import { makeStyles } from '@material-ui/core/styles';
 
 
-const MakerTable = ({selectedmakers, flowmakers}) => {
+const MakerTable = ({flowselected}) => {
 
-  let pathsRef = useRef([ ])
+  let selectedRef = useRef([ ])
   let flowRef = useRef([ ])
 
-    let data = [
-      { id: 1, name: 'John', age: 25 },
-      { id: 2, name: 'Jane', age: 30 },
-      { id: 3, name: 'Bob', age: 40 },
-    ];
 
     useEffect(() => { 
-        flowRef = [{ id: 1, name: 'John' } ];
+      //console.log ("draw maker table")
+      flowRef.current = flowselected[0]
+      selectedRef.current = flowselected[1]
+
+        ///flowRef = [{ id: 1, name: 'John' } ];
 
     }, [ ])
 
-    useEffect(() => { 
-      pathsRef.current = selectedmakers
-      flowRef.current = flowmakers
-      console.log ('selectedmakers ',  pathsRef.current)
-      console.log ('flowmaker ', flowRef.current)
+    useEffect(() => {       
+      //console.log ("update maker table")
 
+     flowRef.current = flowselected[0]
+      selectedRef.current = flowselected[1]
 
-    }, [selectedmakers, flowmakers])
+    }, [flowselected])
 
 
 
@@ -45,7 +42,7 @@ const MakerTable = ({selectedmakers, flowmakers}) => {
         </TableRow>
       </TableHead>
       <TableBody>
-        {flowRef.current.map((row) => (
+        {selectedRef.current.map((row) => (
           <TableRow key={row.id}>
               <TableCell className="id_col table_cell">{row.id}</TableCell>            
               <TableCell className="table_cell">{row.name}</TableCell>

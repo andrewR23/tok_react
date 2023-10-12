@@ -10,56 +10,119 @@
     padding: 0;
   }
 
-  
-.custom-button {
-  background-color: red; /* Set the desired background color */
-  color: white; /* Set the desired text color */
+  .query-string {
+      font-size: 16px;
+      font-style: italic;
+      color: darkslategray;
+      padding-bottom: 12px;
+
+      fill: darkslategray ;
+
+  }
+
+.main-container {
+/*  display: flex;
+  align-items: center;*/
 }
 
-/* slider.css */
 
-.rc-slider {
-  position: relative;
-  height: 6px;
-  border-radius: 6px;
-  background-color: #e9e9e9;
+
+/* SLIDER.css */
+
+    .rc-slider {
+      position: relative;
+      height: 6px;
+      border-radius: 6px;
+      background-color: #e9e9e9;
+    }
+
+    .rc-slider-rail {
+      position: absolute;
+      width: 10px;
+      height: 6px;
+      border-radius: 6px;
+      background-color: #e9e9e9;
+    }
+
+    .rc-slider-track {
+      position: absolute;
+      height: 6px;
+      border-radius: 6px;
+      background-color: #ff0000;
+    }
+
+    .rc-slider-handle {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #ff0000;
+      border-radius: 50%;
+      background-color: #fff000;
+      transform: translate(-50%, -50%);
+    }
+
+    .slider-container { 
+/*      position: absolute;*/
+/*      top: 40px;*/
+      left: 300px;
+      width: 300px;
+      margin: auto;
+    }
+
+    .vis-container { 
+        cursor: pointer;
+
+     }
+
+
+/* FORM buttons */ 
+
+.form-container {
+ /* display: flex;
+  flex-direction: column;
+  gap: 10px; /* Adjust the gap between buttons and form */
 }
 
-.rc-slider-rail {
-  position: absolute;
-  width: 10px;
-  height: 6px;
-  border-radius: 6px;
-  background-color: #e9e9e9;
+.formButton {
+  margin: 1px;
+  font-size: 20px;
+  padding: 4px 8px; /* Adjust the padding to control the height */
 }
 
-.rc-slider-track {
-  position: absolute;
-  height: 6px;
-  border-radius: 6px;
-  background-color: #ff0000;
+.dropdown-menu {
+  margin-top: 1px;
+  font-size: 10px;
+  min-height: auto; /* Set min-height to auto to allow the content to determine the height */
+  padding: 1px 1px; /* Adjust the padding to control the height */
 }
 
-.rc-slider-handle {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border: 2px solid #ff0000;
-  border-radius: 50%;
-  background-color: #fff000;
-  transform: translate(-50%, -50%);
+.apply-button {
+  margin: 1px;
+  font-size: 10px;
 }
 
-.slider-container {
-  position: absolute;
-  top: 40px;
-  left: 300px;
-  width: 400px;
-  margin: auto;
+.dropdown-container {
+  display: flex;
+  gap: 16px; /* Adjust the spacing between dropdowns */
+  margin-bottom: 30px;
 }
 
-.vis-container { 
-    cursor: pointer;
+/* TABLE */
 
- }
+.my_table .table_cell {
+  font-size: 9px;
+  padding: 4px;
+}
 
+.my_table .id_col {
+  width: 20px; /* Set the desired width */
+}
+
+
+.my_table .MuiTableRow-root:nth-child(even) {
+  background-color: #f9f9f9; /* Shade color for even rows */
+}
+
+.my_table .MuiTableRow-root:nth-child(odd) {
+  background-color: #ffffff; /* Shade color for odd rows */
+}
