@@ -300,8 +300,7 @@ const BlockItemLarge = ({id, index, ypos, nodes, nodes_sorted, sub_widths, handl
         height={blockH}
         fill="gray"
         className="blockLrg"
-        //onMouseOver={() => handleMouseOver(id)}
-        //onMouseOver={(event) => {handleBlockRoll(index, grp, sub, event.nativeEvent)}
+        onMouseOver={() => handleMouseOver(id)}
 
       />
       { nodes_sorted.map ((d, i) => {
@@ -330,7 +329,7 @@ const BlockItem = ({id,  subIndex, grpIndex, handleMouseOver, handleMouseClick, 
         className="blockitem"
         onClick={() => handleMouseClick(grpIndex, subIndex)}
         onMouseOver={(event) => handleMouseOver(grpIndex, subIndex, event)}
-        onMouseLeave={()  => handleMouseOut(id)}
+       onMouseLeave={()  => handleMouseOut(id)}
       />
     );
 };

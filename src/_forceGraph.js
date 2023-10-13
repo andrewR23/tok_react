@@ -11,13 +11,12 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
       const dateScaleRef = useRef(d3.scaleLinear().domain([1500, 1950]).range([0, 900]));
       const [animatedNodes, setAnimatedNodes] = useState([]); // this is the array of nodes to ref which gets updated 
 
-      //const [visGrps, setVisGrps] = useState([]); // the VISIBLE groups (nodes which have items in)
+      //const [visGrps, setVisGrps] = useState([]); 
       const [hozSpacing, setHozSpacing] = useState(0); 
 
-     
       
       useEffect(() => { 
-
+          setAnimatedNodes ([...nodes])
           if (layout == "force")  forceMove();
           if (layout == "linear") linearMove( );
           if (layout == "grid") gridMove( );
@@ -35,9 +34,9 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
           let frameW = 2900; 
           setHozSpacing (frameW/visibleGrps.length)
 
-
-
       }, [nodes, layout, flowselected])
+
+
 
 
       useEffect(() => { 
@@ -70,36 +69,41 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
 
       // -- draw  -- //
       const forceMove = () => {
+          //let minX = 0;
+          //let maxX = 0; 
+          //let minY = 0; 
+          //let maxY = 0; 
+          //let width = 0; //  = maxX - minX *.5
+          //let height = 0; // maxY - minY *.5
+
+          let offsetX = 1500;
+          // ------------- // 
           const simulation = d3
               .forceSimulation([...nodes])
-              .force("x", d3.forceX(1000))
+              .force("x", d3.forceX(0))
               .force("y", d3.forceY(0))
               .force("charge", d3.forceManyBody().strength(d => d.nodes.length*-40))
               .force("collision", d3.forceCollide(d => d.nodes.length*15))
-              .force("bouding-edge", () => {
-                          nodes.forEach(node => {
-                            //console.log ('node ', node.y)
-                            if (node.y < 100) node.y += 10
-                            // if (node.y > 800) node.y -= 10; 
-                            if (node.x < 300) node.x += 10
-                            if (node.x > 4000) node.x -= 10
+              //.stop( )
+              .on("tick", () => {
+                  //setAnimatedNodes([...simulation.nodes()]);
+              })
 
-                            
-                          })
-                })
-                // .force("charge", d3.forceManyBody().strength(d => d.nodes.length*-40))
-                // .force("collision", d3.forceCollide(d => d.nodes.length*20))
-
-              // .force("bounds", d3.force("bounds", keepNodesInBounds))
-              .stop( )
-
-
-          for (let i = 0; i < 500; ++i) {
-                simulation.tick();
-                setAnimatedNodes([...simulation.nodes()]);
+          // ----------------- // 
+          for (let i=0; i<20; ++i) {
+              simulation.tick( );
+              setAnimatedNodes([...simulation.nodes()]);
           } 
 
+          // -- calc height force here ... get height of the nodes (min max y)
+          let minY = Math.min(...animatedNodes.map(function (obj) {return obj.y}));
+          let maxY = Math.max(...animatedNodes.map(function (obj) {return obj.y}));
+          let height  = (maxY - minY) * 0.5;    
+          //console.log ("minY  = ", minY, ' maxY = ', maxY);
+          //console.log ("height ", height);
 
+
+          // ----------------- // 
 
           // -- set GROUP position
           d3.select(svgRef.current)
@@ -110,8 +114,8 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
               .delay(3000)
               .duration(4000)
               .attr ('transform', (d, i) => { 
-                  let x = d.x
-                  let y = d.y
+                  let x = d.x + offsetX
+                  let y = d.y + height
                   //let y = Math.max(0, Math.min(500, d.y));
                   return `translate(${x}, ${y}) scale(1)`
                }) 
@@ -129,7 +133,7 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
               .attr('opacity', 0.1)
 
 
-          simulation.alpha(0.1).restart();
+          //simulation.alpha(0.1).restart();
 
 
           return () => simulation.stop(); // clean up function
@@ -317,9 +321,9 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
   useEffect(()=> {  
       // --- // 
       if (layout == "force") forceMoveSmall();
-      // --- // 
+      //--- // 
       if (layout == "linear") linearMoveSmall( );
-      // --- //
+      //--- //
       if (layout == "grid") forceMoveSmall( );
 
       // console.log ("update selected makers  ", flowselected)
@@ -363,6 +367,7 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
           .data(data)  
           .attr('class', 'smallcircle')
           .transition()
+          .delay(3000)
           .duration(3000)
           .attr('cx', (d => d.x))
           .attr('cy', (d => d.y))
@@ -376,6 +381,7 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
           .data(links)  
           .attr('class', 'linksmall')
           .transition()
+          .delay(3000)
           .duration(3000)
           .attr('x1', (d => d.source.x))
           .attr('y1', (d => d.source.y))

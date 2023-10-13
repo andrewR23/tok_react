@@ -173,7 +173,7 @@ const App: React.FC = () => {
 
 
     // -- handle filter form -- .
-    const handleFilterChange = (type: any, value: any) => {
+    const handleFilterChange = (type: any   , value: any) => {
             console.log ("handle filter change")
             console.log ('type = ', type , ' value = ', value)
             //console.log ('makers = ', makers)
@@ -268,15 +268,16 @@ const App: React.FC = () => {
        return filteredmakers;
      }
 
-    // -- ** TS ERROR ** -- 
-    function filterMakersByAttribute (att: keyof MakerType, val: any, b: any ) { 
+    // -- 
+    function filterMakersByAttribute (att: keyof MakerType, val: string, bool_: any ) { 
+        // filter attributes -e.g. guild != none..... // makers / allmaker
+        // filter the 'filtered makers attribute -- // '
         let  filteredmakers : MakerType[] = makersFilter.filter (m =>  { 
-            return m[att].includes (val) === b;
+            return m[att].includes (val) === bool_;
         });
 
         return filteredmakers;
     }
-
 
     // -- filter social group by size 
     function filterSocialGroupBySize ( ) { 
@@ -598,7 +599,7 @@ const App: React.FC = () => {
 
     // -- roll over sub item
     function handleBlockRoll (barIndex:number, groupIndex:number, subIndex:number, event:MouseEvent) { 
-        //console.log ('blockRoll: ', barIndex, ' ', groupIndex, ' ', subIndex, ' ', event)
+        //console.log ('blockRoll: ', barIndex, ' ', groupIndex, ' ', subIndex)
         
 
         // ---------------------- // 
@@ -617,12 +618,11 @@ const App: React.FC = () => {
 
         let name = rowData[barIndex].makers_group[groupIndex].name;
         let val =  rowData[barIndex].makers_group[groupIndex].value
-    
-         const mouseX = event.clientX;
-         const mouseY = event.clientY + window.scrollY;
-         //console.log (name, ' :  ', val, ' ', mouseX)
-         setTooltip({ show: true, x : mouseX+30, y: mouseY+20, content: `${val}` });
-        
+
+        const mouseX = event.clientX;
+        const mouseY = event.clientY + window.scrollY;
+        //console.log (name, ' :  ', val, ' ', mouseX)
+        setTooltip({ show: true, x : mouseX+30, y: mouseY+10, content: `${val}` });
     }
     // --------- 
     function handleRollOut ( ) { 
@@ -630,8 +630,8 @@ const App: React.FC = () => {
         setTooltip({ show: false, x : 0, y: 0, content: `` });
     }
 
-    function handlePathRoll (data:any, path: any, event: MouseEvent) { 
-        //console.log ("rollover path ", data, '  ', path, ' ', event);
+    function handlePathRoll (data: any, path: any, event: MouseEvent) { 
+        //console.log ("rollover path ", data, '  ', path);
 
         if (path.pathType != 12)  {
             const ids = data.makers.map ((d:any) => d.id)
@@ -647,8 +647,8 @@ const App: React.FC = () => {
   
 
   return (
-    <div style={{padding: '50px' }}>
-      <div>Ver_12_10</div>  
+    <div style={ {padding: "20px"}} >
+      <div>Ver_13_10</div>  
        <ThemeProvider theme={guitheme}>
            <div className="slider-container">
                 <Slider
