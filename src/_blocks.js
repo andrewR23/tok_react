@@ -9,12 +9,14 @@ import { Tooltip, Typography } from '@mui/material';
 let blockH = 40; 
 
 
-const BlockGroup = ({ data, ypos, index, widths, handleBarData, handleBlockSelection, handleBlockRoll, handleRollOut}) => {
+const BlockGroup = ({ data, ypos, index, widths, rowinfo, handleBarData, handleBlockSelection, handleBlockRoll, handleRollOut}) => {
   let svgRef = useRef(null);
   
   let locs = useRef ([ ]); // xy loc of blocks (base)
   let subLocs = useRef ( [ ]);
   //let widthsRef = useRef ([ ])
+
+
 
 
   const [locsState, setLocsState] =  useState([ ]); 
@@ -24,9 +26,9 @@ const BlockGroup = ({ data, ypos, index, widths, handleBarData, handleBlockSelec
 
 
   useEffect(() => {   
-      //console.log ("block data = ", data)
+      console.log ("block data = ", data)
       drawBlocks( );
-      handleBarData(locs.current, subLocs.current, data, index, [...widths]) 
+      handleBarData(locs.current, subLocs.current, data, index, [...widths]) // this is the problem atm
   }, [data])
 
 
@@ -145,6 +147,11 @@ const BlockGroup = ({ data, ypos, index, widths, handleBarData, handleBlockSelec
 
   return (
     <g ref={svgRef}>
+
+      <text x = {10}  y = {ypos-10} fontSize= {"36px"} >
+        {rowinfo.toUpperCase( )}
+      </text>
+
 
       {data.map((d, i) => {
 

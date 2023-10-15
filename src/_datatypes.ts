@@ -2,7 +2,7 @@ import netClustering from 'netclustering';
 import makersJSON from './assets/allmakers_dates.json';
 
 // -- query string : to construct flows -- // 
-const queryString = 'towns=&guilds=&known_instruments=';//=&advertised_instruments='; // 'towns=Chigwell&guilds=Clockmakers'; // 'towns=London&date>1800';
+const queryString = 'towns=';//=&advertised_instruments='; // 'towns=Chigwell&guilds=Clockmakers'; // 'towns=London&date>1800';
 
 // known_instruments advertised_instruments , towns, guilds 
 
@@ -80,7 +80,7 @@ export interface RowType {
 
 
 
-const allmakers = makersJSON.makers.slice (0, 1400); // get a subset to test 
+const allmakers = makersJSON.makers.slice (0, 1200); // get a subset to test 
 
 // get all the makers and and filter (remove if they have missing targets)
 const linkTypes = [
@@ -436,20 +436,41 @@ function sortByAttribute (nodes: MakerType[], attr: string) {
 // -- generate query -- and row data -- // 
 let rowsDataset: RowType[] = []; // Initialize data as an empty array
 const queryItems = parseQueryString(queryString); // parse the query //  
-//console.log ('queryitems =  ', queryItems); // this is the constructed query -- //
+console.log ('queryitems =  ', queryItems); // this is the constructed query -- //
 
 // -- populate rowDataset -- //
 queryItems.forEach ((q, i)  => { 
+    //console.log ('query = ', q)
   rowsDataset.push ( { id : i, query: q, makers: [], makers_group: [], makers_sorted: [[],[], []]}) // create rows : no makers  
   rowsDataset[i].makers_group= sortByAttribute ([...base_makers], rowsDataset[i].query.att) ;// this adds all the makers 
 
 })
 
+console.log ('rowsDataset = ', rowsDataset)
+
+export function addRow (rowdata:any, att:any) { 
+    //console.log ('add to row ', att)
+    //console.log ('current row data ', rowdata)
+
+    let rowQuery = { att: att, operator: '=', value: [""]}
+    let rowIndex = rowdata.length
+    //console.log ('new query : ', newquery, ' id ', index)
+    rowdata.push ( { id : rowIndex, query: rowQuery, makers: [], makers_group: [], makers_sorted: [[],[], []]})  
+    rowdata[rowIndex].makers_group= sortByAttribute ([...base_makers], rowdata[rowIndex].query.att) ;// this adds all the makers 
+    
+    let temprows = sortRows(rowdata)
+    console.log ('temp row data  = ', temprows)
+
+    return rowdata
+
+}
+
 //sortRows(rowsDataset);
-let temprows = sortRows(rowsDataset)
+//let temprows = 
+sortRows(rowsDataset) // sort into 3 subgroups
 
 //console.log ('updated rows = ', updatedrows)
-//console.log ('rows data result = ', rowsDataset)
+console.log ('rows data result = ', rowsDataset)
 //console.log ('rows data result TEMP = ', temprows)
 
 
@@ -485,13 +506,17 @@ function parseQueryString(queryString: string) {
 
 export function sortRows (rowdata: any[] ) { 
     // -- 
-    //console.log ("DO sort rows ", rowdata)
     //let updatedrowdata:any = [...rowdata]
-    
+    //console.log ("sort rows rowdata =  ", rowdata)
     rowdata.forEach (row => {
-        //console.log ("this is a row: ", row)
+        //console.log ("this is row: ", row.id, " : ",  row)
 
-        let sourcedata = row.id === 0 ? base_makers : rowsDataset[row.id-1].makers_sorted[0];
+        if (row.id >0 ) { 
+            //console.log (" prev row = ",  rowdata[row.id - 1 ])
+        }
+
+        //let sourcedata = row.id === 0 ? base_makers : rowsDataset[row.id-1].makers_sorted[0];
+        let sourcedata = row.id === 0 ? base_makers : rowdata[row.id-1].makers_sorted[0]; // source is all selected makers in prev row.
 
         if (row.query.value.length === 1 && row.query.value[0] === '*') {
             row.makers_sorted[0] = []; // none in flow 
@@ -533,43 +558,43 @@ export function sortRows (rowdata: any[] ) {
 }
 
 // -- populateRowData 
-function populateRowData (row: RowType) { 
-      let sourcedata = row.id === 0 ? base_makers : rowsDataset[row.id-1].makers;
-//      // if row = 0 filter from all makers - otherwise filter from previous makers... 
-//      // if row.query = * then return [ ].. else filter makers 
-//      // if query = '*' - then makers is blank.. otherwise 'filter the makers '
-     
-      //console.log ('source data ', sourcedata);
-      //console.log ('row query value ', row.query.value)
+    // export function populateRowData (row: RowType) { 
+    //       let sourcedata = row.id === 0 ? base_makers : rowsDataset[row.id-1].makers;
+    // //      // if row = 0 filter from all makers - otherwise filter from previous makers... 
+    // //      // if row.query = * then return [ ].. else filter makers 
+    // //      // if query = '*' - then makers is blank.. otherwise 'filter the makers '
+         
+    //       //console.log ('source data ', sourcedata);
+    //       //console.log ('row query value ', row.query.value)
 
-    let filterdata: MakerType[];
-    // if query = '*' - then makers is blank.. otherwise 'filter the makers '
-    if (row.query.value.length === 1 && row.query.value[0] === '*') {
-      filterdata = [];
-    } else {
-      filterdata = filterMakers(sourcedata, row.query.att, row.query.value);
-    }
-
-
-    // let filterdata = row.query.value === ['*'] ? [ ]  : filterMakers (sourcedata, row.query.att, row.query.value);
-    // let filterdata = filterMakers (sourcedata, row.query.att, row.query.value);
-    // console.log ("filter data = ", filterdata)
-    row.makers.push (...filterdata)
+    //     let filterdata: MakerType[];
+    //     // if query = '*' - then makers is blank.. otherwise 'filter the makers '
+    //     if (row.query.value.length === 1 && row.query.value[0] === '*') {
+    //       filterdata = [];
+    //     } else {
+    //       filterdata = filterMakers(sourcedata, row.query.att, row.query.value);
+    //     }
 
 
-    function filterMakers (source: MakerType[], attr: any , value:string[]) {
-        //console.log ('attribute = ', attr, 'value = ', value)
-        let filter = source.filter ((m:MakerType) => m[attr as keyof MakerType].includes (value[0]) == true )// * improve this *
-        return filter; 
-    }
+    //     // let filterdata = row.query.value === ['*'] ? [ ]  : filterMakers (sourcedata, row.query.att, row.query.value);
+    //     // let filterdata = filterMakers (sourcedata, row.query.att, row.query.value);
+    //     // console.log ("filter data = ", filterdata)
+    //     row.makers.push (...filterdata)
 
- }
+
+    //     function filterMakers (source: MakerType[], attr: any , value:string[]) {
+    //         //console.log ('attribute = ', attr, 'value = ', value)
+    //         let filter = source.filter ((m:MakerType) => m[attr as keyof MakerType].includes (value[0]) == true )// * improve this *
+    //         return filter; 
+    //     }
+
+    //  }
 
  // add more to the populate row data set - and export each as a set of data -- // 
 
 
 // export stuff -- 
-//console.log ('base makers = ', base_makers)
+//console.log ('base row = ', rowsDataset)
 export {base_makers}  // base set of makers 
 export {social_Clusters}
 export {rowsDataset} ;// sorted rows 

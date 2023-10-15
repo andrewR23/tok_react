@@ -1,3 +1,4 @@
+"use client"
 import React, { useEffect, useRef, useState } from 'react';
 
 import { MakerType, LinkType, ClusterType, AttributeType} from './_datatypes'
@@ -32,7 +33,7 @@ import QueryString from './_querystring';
 
 
 // functions  -- // 
-import {sortRows}  from './_datatypes'; 
+import {sortRows, addRow}  from './_datatypes'; 
 
 
 
@@ -74,8 +75,12 @@ const App: React.FC = () => {
     // -- UI -- 
     const [tooltip, setTooltip] = useState({ show:false, x:0, y:0, content:'...' });
 
+    const [baseY, setBaseY] = useState(80)
+    let barSpace = 450;// gap between bars 
+
 
     useEffect ( ()=> { 
+        console.log ('imported rows from rowData set = ', rowData)
          // -- update rows to start with -- //
         let updatedRowItems = updateRows( [...rowData]);
         setRowData (updatedRowItems)
@@ -105,12 +110,19 @@ const App: React.FC = () => {
 
     
     useEffect (( ) => { 
-            console.log ("updated social groups")
+            //console.log ("updated social groups")
             // -- update makers -- //
             let updatedRowItems = updateRows( [...rowData]); 
             setRowData (updatedRowItems)
 
     }, [socialGroups])
+
+    useEffect (() => { 
+        console.log ('row data is updated ')
+        //console.log ("new row data = ", rowData)
+        setQueryString (extractQueryString( ))
+
+    }, [rowData])
 
 
 
@@ -173,9 +185,9 @@ const App: React.FC = () => {
 
 
     // -- handle filter form -- .
-    const handleFilterChange = (type: any   , value: any) => {
-            console.log ("handle filter change")
-            console.log ('type = ', type , ' value = ', value)
+    const handleFilterChange = (type:any, value:any) => {
+            //console.log ("handle filter change")
+            //console.log ('type = ', type , ' value = ', value)
             //console.log ('makers = ', makers)
             // -- FILTER the FILTERED makers -- // 
             const filteredMakers = filterMakersByAttribute(type, value, false);
@@ -190,16 +202,19 @@ const App: React.FC = () => {
     function updateRows (data : any) {
             //console.log ("update the rows: the grouped makers in each row... ")
             let updatedRow = data; // [...rowData]; // create a copy of the rowData.
-
+            //console.log ('updated row new ', updatedRow)
             // -- go through each row -- // 
             // -- update the nodes 
             // -- update the nodes_sorted 
             // -- do this based on.. the row data 
 
             updatedRow.forEach ((row:any, i:number)  => { 
+                //console.log ('i =', i)
+                //console.log ('row = ', row)
                 let updatedMakerGroups = [...row.makers_group]; 
                 updatedMakerGroups = updateNodes(updatedMakerGroups)
-                updatedMakerGroups = updateSorted(updatedMakerGroups, [...rowData[i].makers_sorted])
+                //updatedMakerGroups = updateSorted(updatedMakerGroups, [...rowData[i].makers_sorted])
+                updatedMakerGroups = updateSorted(updatedMakerGroups, row.makers_sorted); // [...rowData[i].makers_sorted])
                 updatedRow[i].makers_group = updatedMakerGroups;
 
             })
@@ -407,16 +422,23 @@ const App: React.FC = () => {
 
 
     function renderBarComponents( ) { 
+        console.log ("render bar")
         //console.log ("row data   = ", rowData)
         if (rowData !== null  ) {
             return rowData.map((row:any, i:number) => {
+                console.log ("bar source = ", row)
+                let attribute = row.query.att; 
+                let values = row.query.value.join (' // ')
                 let sourceData =  row.makers_group; /// barGroups[i];
+                let rowInfo = attribute + " : " + values;
+                //console.log ('row info = ', rowInfo)
 
                 // calc widths for each row.. 
-                // console.log ('row source data = ', sourceData)
+                 //console.log ('row source data = ', sourceData)
                 let widths = calcRowWidths(sourceData)
 
-                return (<BlockGroup key={i} data={sourceData} widths={widths} ypos={i*450} index={i} 
+                return (<BlockGroup key={i} data={sourceData} widths={widths} ypos={i*barSpace} index={i} 
+                                    rowinfo={rowInfo}
                                     handleBarData={handleBarData} 
                                     handleBlockSelection={handleBlockSelection}
                                     handleBlockRoll={handleBlockRoll}
@@ -630,7 +652,7 @@ const App: React.FC = () => {
         setTooltip({ show: false, x : 0, y: 0, content: `` });
     }
 
-    function handlePathRoll (data: any, path: any, event: MouseEvent) { 
+    function handlePathRoll (data:any, path:any, event: MouseEvent) { 
         //console.log ("rollover path ", data, '  ', path);
 
         if (path.pathType != 12)  {
@@ -642,13 +664,24 @@ const App: React.FC = () => {
 
     }
 
+    function handleAddRow (value:any) { 
+        //console.log ('handle add row', rowData)
+        let updatedRow  = addRow ([...rowData], value)
+        //console.log ('updated rows = ', updatedRow)
+        let updatedRows2 = updateRows( updatedRow);
+        
+        //let by  = baseY += 100
+        setBaseY (baseY+barSpace*.3)
+        setRowData (updatedRows2)
+    }
+
 
     // org width = width / scale (1500/ 0.33)
   
 
   return (
-    <div style={ {padding: "20px"}} >
-      <div>Ver_13_10</div>  
+    <div style={{ padding: '30px' }}>
+      <div>Ver_15_10</div>  
        <ThemeProvider theme={guitheme}>
            <div className="slider-container">
                 <Slider
@@ -666,7 +699,7 @@ const App: React.FC = () => {
 
             <div className="form-container"> 
                 <FilterForm onFilterChange={handleFilterChange} onFilterReset={handleFilterReset}
-                            onFilterGroups={filterGroupBySize} />
+                            onFilterGroups={filterGroupBySize} onAddRow={handleAddRow} />
                 <Button variant="text" onClick={() => setLayout('force')}>force</Button> 
                 <Button variant="text" onClick={() => setLayout('linear')}>linear</Button> 
                 <Button variant="text" onClick={() => setLayout('grid')}>grid</Button> 
@@ -675,7 +708,7 @@ const App: React.FC = () => {
 
              <svg width="1500" height="1300">
                    <rect width="100%" height="100%" fill="OldLace" />
-                <QueryString querystring = {queryString}/>
+                {/*<QueryString querystring = {queryString}/>*/}
 
                 {/*Bar and Paths */}
                 <g transform ='translate(150, 40) scale (.33)'>
@@ -683,7 +716,7 @@ const App: React.FC = () => {
                     {renderBarComponents()}
                 </g>
                 {/*Force Graph  */}
-                <g transform ='translate(20, 400) scale (.5)'>
+                <g transform={`translate(${20}, ${baseY}) scale(${0.5})`}>
                     <SocialCluster nodes={socialGroups} layout={layout} daterange={dateRange} flowselected={flowSelected} />
                 </g>
              </svg>
