@@ -80,7 +80,7 @@ export interface RowType {
 
 
 
-const allmakers = makersJSON.makers.slice (0, 1200); // get a subset to test 
+const allmakers = makersJSON.makers.slice (0, 800); // get a subset to test 
 
 // get all the makers and and filter (remove if they have missing targets)
 const linkTypes = [
@@ -436,7 +436,7 @@ function sortByAttribute (nodes: MakerType[], attr: string) {
 // -- generate query -- and row data -- // 
 let rowsDataset: RowType[] = []; // Initialize data as an empty array
 const queryItems = parseQueryString(queryString); // parse the query //  
-console.log ('queryitems =  ', queryItems); // this is the constructed query -- //
+//console.log ('queryitems =  ', queryItems); // this is the constructed query -- //
 
 // -- populate rowDataset -- //
 queryItems.forEach ((q, i)  => { 
@@ -446,7 +446,7 @@ queryItems.forEach ((q, i)  => {
 
 })
 
-console.log ('rowsDataset = ', rowsDataset)
+//console.log ('rowsDataset = ', rowsDataset)
 
 export function addRow (rowdata:any, att:any) { 
     //console.log ('add to row ', att)
@@ -470,7 +470,7 @@ export function addRow (rowdata:any, att:any) {
 sortRows(rowsDataset) // sort into 3 subgroups
 
 //console.log ('updated rows = ', updatedrows)
-console.log ('rows data result = ', rowsDataset)
+//console.log ('rows data result = ', rowsDataset)
 //console.log ('rows data result TEMP = ', temprows)
 
 

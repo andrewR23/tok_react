@@ -6,13 +6,21 @@ const dateScale = d3.scaleLinear(); //.domain([1500, 1950]).range([0, 900])
 
 
 
-const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
+const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations }) => {
       let svgRef = useRef(null);
       const dateScaleRef = useRef(d3.scaleLinear().domain([1500, 1950]).range([0, 900]));
       const [animatedNodes, setAnimatedNodes] = useState([]); // this is the array of nodes to ref which gets updated 
 
       //const [visGrps, setVisGrps] = useState([]); 
       const [hozSpacing, setHozSpacing] = useState(0); 
+
+      const [grpLocs, setGrpLocs] =  useState([ ]); 
+      let locs = useRef([])
+      let subLocs = useRef([]); // an array of sublocs (grouped)
+
+      //let grpItems = useRef([])
+      const [grpItems, setGrpItems] = useState([])
+
 
       
       useEffect(() => { 
@@ -26,19 +34,40 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
           let visibleGrps  = nodes.filter (d => d.nodes.length> 0);
           //setVisGrps (visibleGrps)
 
-          //console.log ('all social groups:  ', nodes)
+          //console.log ('UPDATE social groups:  ')
           //console.log ("visible groups = ", visibleGrps);
           //setGrpCount (nodes.length) 
+          //console.log ('grp locs = ', grpLocs)
 
           //
           let frameW = 2900; 
           setHozSpacing (frameW/visibleGrps.length)
 
+          // handle updated locs.. -- // 
+          //handleLocations (grpItems)
+
       }, [nodes, layout, flowselected])
 
 
+      // --- -// 
+      useEffect(() => { 
+        let grpItems = [ ];
+        //console.log ('group locs = ', grpLocs)
+        //console.log ('subLocs locs = ', subLocs.current)
+        grpLocs.forEach ((g, i) => { 
+           let locItem = { grpLoc:  grpLocs[i], subLocs: subLocs.current[i]} ; // 
+           grpItems.push (locItem);
+        }) 
 
 
+        setGrpItems (grpItems)
+        
+        handleLocations (grpItems)
+
+      }, [grpLocs])
+
+
+      // ---- // 
       useEffect(() => { 
           if (layout == "linear") linearMove( );
          //console.log ("hoz spacing  = ", hozSpacing);
@@ -56,6 +85,11 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
       }, [daterange])
 
 
+      function handleSubLocs (locs, id) { 
+        subLocs.current[id] = locs; // -- add to array -- / 
+      }
+
+
 
      function sortByDate (nodes) { 
         console.log ('sort by date')
@@ -68,16 +102,10 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
 
 
       // -- draw  -- //
-      const forceMove = () => {
-          //let minX = 0;
-          //let maxX = 0; 
-          //let minY = 0; 
-          //let maxY = 0; 
-          //let width = 0; //  = maxX - minX *.5
-          //let height = 0; // maxY - minY *.5
-
+      function forceMove  () {
           let offsetX = 1500;
           // ------------- // 
+          locs.current = [ ]; 
           const simulation = d3
               .forceSimulation([...nodes])
               .force("x", d3.forceX(0))
@@ -117,8 +145,13 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
                   let x = d.x + offsetX
                   let y = d.y + height
                   //let y = Math.max(0, Math.min(500, d.y));
+                  //console.log ("force POS ; ", i, ' ', [x, y])
+                  //console.log ('helloforce')
+                  locs.current.push ([x, y])
+
                   return `translate(${x}, ${y}) scale(1)`
                }) 
+              //.call(updateGroupLocs)
 
           // -- set CIRCLE size / colour 
           d3.select(svgRef.current)
@@ -135,15 +168,17 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
 
           //simulation.alpha(0.1).restart();
 
-
-          return () => simulation.stop(); // clean up function
+          //console.log ("force locs =", locs);
+          setGrpLocs (locs.current)
+          return simulation.stop(); // clean up function
 
       };
 
-      const linearMove = ( ) => { 
+      function linearMove ( ) { 
             let spacing = 10;
             let visCount = 0;// count the no. of nodes visible. 
             // -- set GROUP position
+            locs.current = [ ];
             d3.select(svgRef.current)
               .selectAll('.largecircleGrp')
               //.data(visGrps)  
@@ -157,8 +192,14 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
                   let y =  d.nodes.length=== 0 ?  20000 : dateScaleRef.current (d.nodes[0].date_1); 
                   // increment vis count // 
                   if (d.nodes.length > 0)  visCount ++; 
+                  //console.log ("linear POS ; ", i, ' ', [x, y])
+                  //console.log ('hellolinear')
+                  locs.current.push ([x, y])
+                  // -- updte values here ?? 
                   return `translate(${x}, ${y}) scale(${1})`
                }) 
+              //.call(updateGroupLocs)
+
        
 
           // -- set CIRCLE size / colour 
@@ -172,10 +213,18 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
               //.attr('fill', 'green')
               .attr('opacity', 0.1)
 
+          // 
+          //console.log ("linear locs ", locs)
+
+          setGrpLocs (locs.current)
+
+
       }
 
-      const gridMove = ( ) => { 
+      function gridMove ( ) { 
         // -- set GROUP position
+            locs.current = [ ];
+            
             d3.select(svgRef.current)
               .selectAll('.largecircleGrp')
               .data(nodes)  
@@ -186,6 +235,8 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
               // .attr('cy', 200)
               .attr ('transform', (d, i) => { 
                   let [x, y] = calcGridPos (d, i);
+                  locs.current.push ([x,y])
+
                   // -- 
                     function calcGridPos(d,  i) { 
                       let colNum = 17;
@@ -195,14 +246,18 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
                       const row = Math.floor(i / colNum);
                       const left = column * (itemwidth + spacing);
                       const top = row * (itemwidth + spacing);
+
                       return [left, top]
                   }
                   //let x = i * 50 + 60 
                   //let y = 200
+
                   return `translate(${x+300}, ${y+100}) scale(1)`
-               }) 
+               })
+               //.call(updateGroupLocs)
 
-
+            setGrpLocs (locs.current)
+            //console.log ("grid locs ", locs)
 
       }
 
@@ -272,6 +327,25 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
       }
 
 
+      function updateGroupLocs (selection) { 
+        // get the group pos for the large circle. 
+        // let locs = [ ] 
+        // //console.log ('update group loc')
+        // selection.each(function(d) {
+        //   //console.log ("group data = ", d)
+        //   let transform  = d3.select(this).attr ('transform')
+        //   const match = transform.match(/translate\(([^,]+),([^)]+)\)/);
+        //   const tX = parseFloat(match[1]);
+        //   const tY = parseFloat(match[2]);
+        //   console.log ('transform =', tX, ' ', tY)
+        //   locs.push ([tX, tY])
+
+        // });
+
+        //setGrpLocs (locs)
+
+      }
+
       // ---- //
       const handleMouseOver = (id) => {
         //changeFade(id)
@@ -281,6 +355,8 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
       const handleMouseOut = (id) => {
         // reset ( ); // opacity (1. scale 1)
       };
+
+
 
 
       return (
@@ -297,6 +373,7 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
                   layout={layout}
                   handleMouseOver={handleMouseOver}
                   handleMouseOut ={handleMouseOut}
+                  handleSubLocs = {handleSubLocs}
                   dateScale = {dateScaleRef.current}
                   opacity={0.4}
 
@@ -312,30 +389,42 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange }) => {
 
 // ------------------------ // 
 // this is like a cluster group which contains sub ndata
-const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMouseOver, handleMouseOut}) => {
+const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMouseOver, handleMouseOut, handleSubLocs}) => {
   let groupRef = useRef(null);
   const [animatedNodes, setAnimatedNodes] = useState([]); // this is the array of nodes to ref which gets updated 
   const [animatedLinks, setAnimatedLinks] = useState(links); // this is the array of nodes to ref which gets updated 
+
+  // -- sub locs -- // 
+  let locs = useRef([ ]); 
+  //let subLocs = useRef ([ ]); // xy loc of blocks (base)
+  let [subLocState, setSubLocState] = useState([])
 
 
   useEffect(()=> {  
       // --- // 
       if (layout == "force") forceMoveSmall();
       //--- // 
+
+      if (layout == "grid") forceMoveSmall( );
+      //--- // 
+
       if (layout == "linear") linearMoveSmall( );
       //--- //
-      if (layout == "grid") forceMoveSmall( );
 
-      // console.log ("update selected makers  ", flowselected)
-      // -- log datescale 
-      // console.log ('date scale = ', dateScale.domain( ))
-
+      //handleSubLocs (subLocState, id );//
 
   },[data, layout, flowselected])
 
+  useEffect (() => { 
+     // send the updated values -- //
+      handleSubLocs (subLocState, id );//
+  }, [subLocState])
+
+
+
 
   // -- draw small groups by force
-  const forceMoveSmall = () => {
+  function forceMoveSmall () {
 
       const simulation = d3
           .forceSimulation([...data])
@@ -347,7 +436,7 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
 
     // add link forces and draw links.. 
 
-      for (let i = 0; i < 400; ++i) {
+      for (let i = 0; i < 40; ++i) {
             simulation.tick();
             setAnimatedNodes([...simulation.nodes()]);
             //setAnimatedLinks([...simulation.links( )])
@@ -355,33 +444,43 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
                   source: { x: link.source.x, y: link.source.y },
                   target: { x: link.target.x, y: link.target.y }
             }));
-            const linkForce = simulation.force("link");
-            const linksnew = linkForce.links( );
+            //const linkForce = simulation.force("link");
+            //const linksnew = linkForce.links( );
             //setAnimatedLinks([...linksnew]);
             // -- END --- // 
       } 
 
+      locs.current = [ ];
       // -- small circle 
-      d3.select(groupRef.current)
+      let selection = d3.select(groupRef.current)
           .selectAll('.smallcircle')
           .data(data)  
           .attr('class', 'smallcircle')
           .transition()
-          .delay(3000)
+          //.delay(3000)
           .duration(3000)
-          .attr('cx', (d => d.x))
-          .attr('cy', (d => d.y))
+          .attr('cx', ((d, i) => {
+            //console.log ("force xy ", d.x, ': ',  d.y)
+            locs.current.push ({id: d.id, loc: [d.x, d.y]}); 
+            return d.x }))
+          .attr('cy', ((d, i) => {
+            return d.y }))
           .attr('r', circleSmallSize)
           .attr('fill', circleSmallFill)
+          //.call (updateSubLocs)
+
+      //updateSubLocs (selection)
+      //console.log ('locs', locs)
+      setSubLocState(locs.current)
 
 
-    // // -- draw lines.. 
+      // // -- draw lines.. 
        d3.select(groupRef.current)
           .selectAll('.linksmall')
           .data(links)  
           .attr('class', 'linksmall')
           .transition()
-          .delay(3000)
+          //.delay(3000)
           .duration(3000)
           .attr('x1', (d => d.source.x))
           .attr('y1', (d => d.source.y))
@@ -391,35 +490,43 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
 
       simulation.alpha(0.1).restart();
 
-      return () => simulation.stop(); // clean up function
+      return simulation.stop(); // clean up function
 
   };
 
   // -- draw small groups (linear) -- // 
-  const linearMoveSmall = ( ) => { 
+  function linearMoveSmall ( ) { 
+        locs.current = [ ] ;
         let linespace = 0;
         let rootY = 0;
-        if (data.length>0) rootY= dateScale(data[0].date_1)
+        if (data.length>0) rootY = dateScale(data[0].date_1)
         //console.log ("root Ypos  = ", rootY);
         // -- console.log -- //
-        d3.select(groupRef.current)
+        let selection = d3.select(groupRef.current)
           .selectAll('.smallcircle')
           .data(data)  
           .attr('class', 'smallcircle')
           .transition( )
-          .duration(4000)
+          //.duration(4000)
           .attr('r', circleSmallSize)
           .attr('cx', 0)
           .attr('cy', (d, i) => {
             let y = dateScale (d.date_1); //
+            //console.log ("line xy ", [0, y-rootY])
+            locs.current.push ({id: d.id, loc: [0, y-rootY]}); //([0, y-rootY])
             return y - rootY;
-            //return  i * linespace + 0
 
           })
           .attr ('fill', circleSmallFill)
+          // .call (updateSubLocs)
 
       // -- update links -- // 
       let updatedLinks = [...animatedLinks];
+
+      //updateSubLocs (selection)
+      //console.log ('locs', locs)
+      setSubLocState(locs.current)
+
 
       // --- draw the links... // 
       d3.select(groupRef.current)
@@ -456,7 +563,7 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
       //console.log ("small circle data = ", selectedmakers)
       if (flowselected[0].map (m=>m.id).includes (d.id)) return 'red'
       if (flowselected[1].map (m=>m.id).includes (d.id)) return 'PowderBlue'
-      return 'lightgray' // darkGray' // PowderBlue' // dra
+      return 'lightgray' // darkGray' // PowderBlue' //
   }
 
   function circleSmallSize (d, i) { 
@@ -464,6 +571,18 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
   }
 
  
+  function updateSubLocs (selection) {
+    // -- update locs -- // 
+    selection.each(function(d) {
+        const cx =  parseFloat (d3.select(this).attr('cx'));
+        const cy =  parseFloat (d3.select(this).attr('cy'));
+        locs.push([cx, cy])
+    });
+
+    //console.log ('locs ', locs.length)
+    //setSubLocState(locs)
+
+  }
 
   // function for mouse over small circle
   const handleMouseOverSmall = (id) => {
@@ -558,61 +677,6 @@ const LinkSmall = ({id}) => {
 
 
 export default SocialCluster;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

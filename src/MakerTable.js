@@ -10,11 +10,16 @@ const MakerTable = ({flowselected}) => {
   let selectedRef = useRef([ ])
   let flowRef = useRef([ ])
 
+  let commonmakers = [ ];
+  let remaining = [ ];
+
 
     useEffect(() => { 
       //console.log ("draw maker table")
       flowRef.current = flowselected[0]
       selectedRef.current = flowselected[1]
+      filter( )
+
 
         ///flowRef = [{ id: 1, name: 'John' } ];
 
@@ -24,9 +29,17 @@ const MakerTable = ({flowselected}) => {
       //console.log ("update maker table")
 
      flowRef.current = flowselected[0]
-      selectedRef.current = flowselected[1]
+     selectedRef.current = flowselected[1]
+     filter ( )
 
     }, [flowselected])
+
+    function filter ( ) { 
+      commonmakers = selectedRef.current.filter (d => flowRef.current.includes (d)== true);
+      remaining = selectedRef.current.filter (d => flowRef.current.includes (d)== false);
+
+
+    }
 
 
 
@@ -42,12 +55,22 @@ const MakerTable = ({flowselected}) => {
         </TableRow>
       </TableHead>
       <TableBody>
-        {selectedRef.current.map((row) => (
-          <TableRow key={row.id}>
+
+        {flowRef.current.map((row) => (
+          <TableRow key={row.id} className="flowRow">
               <TableCell className="id_col table_cell">{row.id}</TableCell>            
               <TableCell className="table_cell">{row.name}</TableCell>
           </TableRow>
         ))}
+
+        {selectedRef.current.map((row) => (
+          <TableRow key={row.id}className="selectedRow">
+              <TableCell className="id_col table_cell">{row.id}</TableCell>            
+              <TableCell className="table_cell">{row.name}</TableCell>
+         </TableRow>
+         ))}
+
+  
       </TableBody>
     </Table>
     </div>

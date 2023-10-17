@@ -9,7 +9,8 @@ import { Tooltip, Typography } from '@mui/material';
 let blockH = 40; 
 
 
-const BlockGroup = ({ data, ypos, index, widths, rowinfo, handleBarData, handleBlockSelection, handleBlockRoll, handleRollOut}) => {
+const BlockGroup = ({ data, ypos, index, widths, rowinfo, handleBarData, handleBlockSelection, handleBlockRoll, handleRollOut,
+                        removeRow}) => {
   let svgRef = useRef(null);
   
   let locs = useRef ([ ]); // xy loc of blocks (base)
@@ -26,9 +27,9 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, handleBarData, handleB
 
 
   useEffect(() => {   
-      console.log ("block data = ", data)
+      //console.log ("block data = ", data)
       drawBlocks( );
-      handleBarData(locs.current, subLocs.current, data, index, [...widths]) // this is the problem atm
+      handleBarData(locs.current, subLocs.current, data, index, [...widths]) 
   }, [data])
 
 
@@ -143,6 +144,11 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, handleBarData, handleB
   }
 
 
+  function handleRemoveRow ( ) {
+      removeRow( )
+  };
+
+
 
 
   return (
@@ -151,6 +157,15 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, handleBarData, handleB
       <text x = {10}  y = {ypos-10} fontSize= {"36px"} >
         {rowinfo.toUpperCase( )}
       </text>
+      <rect 
+          x={-80} 
+          y={ypos+10} 
+          width={50}
+          height={5}
+          fill={"darkgray"}
+          onClick={() => handleRemoveRow( )}
+
+        />
 
 
       {data.map((d, i) => {

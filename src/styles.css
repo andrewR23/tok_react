@@ -85,7 +85,7 @@
 
 .formButton {
   margin: 1px;
-  font-size: 20px;
+  font-size: 10px;
   padding: 4px 8px; /* Adjust the padding to control the height */
 }
 
@@ -119,10 +119,20 @@
 }
 
 
-.my_table .MuiTableRow-root:nth-child(even) {
-  background-color: #f9f9f9; /* Shade color for even rows */
+.my_table .selectedRow:nth-child(even) {
+  background-color: #baeaf0; /* Shade color for even rows */
 }
 
-.my_table .MuiTableRow-root:nth-child(odd) {
-  background-color: #ffffff; /* Shade color for odd rows */
+.my_table .selectedRow:nth-child(odd) {
+  background-color: #e2ffff; /* Shade color for odd rows */
 }
+
+
+.my_table .flowRow:nth-child(even) {
+  background-color: #fff4f3; /* Shade color for even rows */
+}
+
+.my_table .flowRow:nth-child(odd) {
+  background-color: #FFCCCB; /* Shade color for odd rows */
+}
+

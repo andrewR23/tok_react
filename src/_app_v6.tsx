@@ -34,8 +34,7 @@ import QueryString from './_querystring';
 
 // functions  -- // 
 import {sortRows, addRow}  from './_datatypes'; 
-
-
+//
 
 const guitheme = createTheme({
   palette: {
@@ -60,16 +59,20 @@ const App: React.FC = () => {
     const [pathData, setPathData] = useState([]) // single path 
     const [pathDataList, setPathDataList] = useState([]) // list of paths 
     const [offsets, setOffsets] = useState([])
+
+    const [nodeLocs, setNodeLocs] = useState([])
+
     
     // -- 
     const [layout, setLayout] = useState ('linear'); // set state for layout
 
     // -- get the total of makers selected and shared (flow) from the query 
-    const [selectedMakers, setSelectedMakers] = useState<any[]>(rowData[0].makers)
-    const [flowMakers, setFlowMakers] = useState<any[]>(rowData[rowData.length-1].makers)
+    // const [selectedMakers, setSelectedMakers] = useState<any[]>(rowData[0].makers)
+    // const [flowMakers, setFlowMakers] = useState<any[]>(rowData[rowData.length-1].makers)
     // combine flow and selected as array -- // 
 
     const [flowSelected, setFlowSelected] = useState<any[]> ([rowData[rowData.length-1].makers, rowData[0].makers])
+
     const [queryString, setQueryString] = useState("<set query string>")
 
     // -- UI -- 
@@ -80,7 +83,7 @@ const App: React.FC = () => {
 
 
     useEffect ( ()=> { 
-        console.log ('imported rows from rowData set = ', rowData)
+        //console.log ('imported rows from rowData set = ', rowData)
          // -- update rows to start with -- //
         let updatedRowItems = updateRows( [...rowData]);
         setRowData (updatedRowItems)
@@ -95,6 +98,8 @@ const App: React.FC = () => {
 
             let updatedRowItems = updateRows( [...rowData]); 
             setRowData (updatedRowItems)
+
+  
 
     }, [makers])
 
@@ -118,7 +123,7 @@ const App: React.FC = () => {
     }, [socialGroups])
 
     useEffect (() => { 
-        console.log ('row data is updated ')
+        //console.log ('row data is updated ')
         //console.log ("new row data = ", rowData)
         setQueryString (extractQueryString( ))
 
@@ -178,9 +183,9 @@ const App: React.FC = () => {
     }
 
     function handleFilterReset ( ) { 
-        // let filtered
-        //console.log ("filter reset")
-        setMakersFilter (allmakers)
+            // let filtered
+            //console.log ("filter reset")
+            setMakersFilter (allmakers)
     }
 
 
@@ -225,6 +230,10 @@ const App: React.FC = () => {
             //setFlowMakers (rowData[rowData.length-1].makers_sorted[0])  // the result of the flow in base row.. (after filter. )
             
             setFlowSelected ([rowData[rowData.length-1].makers_sorted[0], rowData[0].makers_sorted[0]])
+
+            //let filteredmakers = rowData[rowData.length-1].makers_sorted[0], rowData[0].makers_sorted[0]
+            //setFlowFiltered ([rowData[rowData.length-1].makers_sorted[0], rowData[0].makers_sorted[0]])
+
 
             return updatedRow
 
@@ -384,13 +393,23 @@ const App: React.FC = () => {
     function handleBarData (locs:any, sublocs:any, data:any, i:number, widths:any) { 
         let bar  = { index:i, data:data,  locs:locs, sublocs:sublocs, widths:widths}
         barItems[i] = bar;
+        //  -- use bar to generate flows to makers from the bottom bar 
+         
+        // console.log ('no. of rows = ', rowData.length)
+        // get flow from the base bar -- // 
+        if (barItems.length == rowData.length) generateFlowList (barItems[rowData.length-1])
+
         // // when we have more than one bar: generate links... 
         if (barItems.length>1) {
             // // ------- // 
             let linkList: any = generateLinkList( )
             setPathDataList (linkList)
             //console.log ('link data (list) ', linkList)
+
+
         }
+
+
     }
 
 
@@ -421,12 +440,13 @@ const App: React.FC = () => {
     }
 
 
+
     function renderBarComponents( ) { 
-        console.log ("render bar")
+        //console.log ("render bar")
         //console.log ("row data   = ", rowData)
         if (rowData !== null  ) {
             return rowData.map((row:any, i:number) => {
-                console.log ("bar source = ", row)
+                //sconsole.log ("bar source = ", row)
                 let attribute = row.query.att; 
                 let values = row.query.value.join (' // ')
                 let sourceData =  row.makers_group; /// barGroups[i];
@@ -443,6 +463,7 @@ const App: React.FC = () => {
                                     handleBlockSelection={handleBlockSelection}
                                     handleBlockRoll={handleBlockRoll}
                                     handleRollOut={handleRollOut}
+                                    removeRow={handleRemoveRow}
                                     />)
             })
         } else { 
@@ -664,24 +685,57 @@ const App: React.FC = () => {
 
     }
 
+    // --- add row -- // 
     function handleAddRow (value:any) { 
         //console.log ('handle add row', rowData)
         let updatedRow  = addRow ([...rowData], value)
         //console.log ('updated rows = ', updatedRow)
         let updatedRows2 = updateRows( updatedRow);
         
-        //let by  = baseY += 100
         setBaseY (baseY+barSpace*.3)
         setRowData (updatedRows2)
     }
 
 
-    // org width = width / scale (1500/ 0.33)
+    // --- remove row -- // 
+    function handleRemoveRow( ) { 
+        //console.log ("this is remove row...", rowData)
+        //let updatedRows = [...rowData].pop()
+        let updatedRows = [...rowData].slice(0, -1);
+        //console.log ('removed rows = ', updatedRows)
+        setRowData (updatedRows)
+    }
+
+    // -- get links between bar and makers (in social group)
+    function generateFlowList (bar: any ) { 
+        console.log ("generate flow links from bar : ", bar)
+        //console.log ('get the positon of makers ?? ')
+        // get the makers in subsection [0] (red)
+        // 1. get the flow makers in the 
+        // get the ids of selected makers.. // 
+        // see the locs in the bottom bar.. in the groups 
+
+    }
+
+    function handleLocations (locs:any) {
+       // console.log ("udpated locations -- ", locs)
+        setNodeLocs (locs);
+        console.log ('node locs : ', nodeLocs)
+
+        // draw lines from node locs to groups .. 
+    }
+
+    function drawPaths ( ) { 
+
+    }
+
+
+
   
 
   return (
     <div style={{ padding: '30px' }}>
-      <div>Ver_15_10</div>  
+      <div>Ver_17_10</div>  
        <ThemeProvider theme={guitheme}>
            <div className="slider-container">
                 <Slider
@@ -717,7 +771,7 @@ const App: React.FC = () => {
                 </g>
                 {/*Force Graph  */}
                 <g transform={`translate(${20}, ${baseY}) scale(${0.5})`}>
-                    <SocialCluster nodes={socialGroups} layout={layout} daterange={dateRange} flowselected={flowSelected} />
+                    <SocialCluster nodes={socialGroups} layout={layout} daterange={dateRange} flowselected={flowSelected} handleLocations={handleLocations} />
                 </g>
              </svg>
              
