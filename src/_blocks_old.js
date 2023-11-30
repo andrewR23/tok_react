@@ -7,18 +7,17 @@ import { Tooltip, Typography } from '@mui/material';
 
 
 let blockH = 40; 
-let delay = 0; 
-let duration = 4000
 
 
-const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBarData, handleBlockSelection, handleBlockRoll, handleRollOut,
+const BlockGroup = ({ data, ypos, index, widths, rowinfo, handleBarData, handleBlockSelection, handleBlockRoll, handleRollOut,
                         removeRow}) => {
   let svgRef = useRef(null);
-
   
   let locs = useRef ([ ]); // xy loc of blocks (base)
   let subLocs = useRef ( [ ]);
   //let widthsRef = useRef ([ ])
+
+
 
 
   const [locsState, setLocsState] =  useState([ ]); 
@@ -29,18 +28,32 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBa
 
   useEffect(() => {   
       //console.log ("block data = ", data)
-      //console.log ('row info =', rowinfo)
-      //console.log ('row selection = ', rowSelection); // row selection is more important...
-
       drawBlocks( );
-      handleBarData(locs.current, subLocs.current, data, index, [...widths], rowSelection) 
+      handleBarData(locs.current, subLocs.current, data, index, [...widths]) 
   }, [data])
 
 
   useEffect( () =>{
 
+
   }, [ ])
 
+  // -- TO REMOVE -- // 
+      // function calcWidths (items) { 
+      //     let totalWidth = 2000
+      //     let widths  = [...items].map (d => d.nodes.length); 
+      //     const sumValue = widths.reduce((acc, curr) => acc + curr, 0);
+      //     widths = widths.map (d => { 
+      //       return Math.ceil (d / sumValue * totalWidth)  ; 
+      //     })
+      //     return  widths;
+      // }
+
+      // -- // 
+      // function calcWidth (item) { 
+      //     return item.nodes.length * 10;
+      // }
+      // -- // 
 
 
   function handleSubBlocks (sublocs, id) { 
@@ -63,6 +76,23 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBa
   }, [locsState])
 
 
+
+  // -- TO REMOVE -- // 
+    // -- calc spacing and update locs -- // 
+    // function calcSpacing (data, i) { 
+    //     let spacing = 5; 
+        
+    //     const sum = data
+    //         .slice(0, i) // Get the preceding items
+    //         .reduce((acc, curr) => acc + spacing + calcWidth(curr), 0);
+        
+    //     const gx = sum + spacing; 
+    //     const gy = ypos
+
+    //     locs.current[i] = [gx, gy]
+    //     return [gx, gy]
+    // }
+
   // -- calc spacing from widths -- 
   function calcSpacing (widths, i) { 
       let spacing = 8; 
@@ -84,40 +114,33 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBa
       const groupTransition = d3.select(svgRef.current)
           .selectAll('.blockGroupLrg')
           .data(data)  
+          //.data(widths)  
           .attr('class', 'blockGroupLrg')
           .transition()
-          .delay(delay)
-          .duration(duration) // (2000)
+          .delay(1000)
+          .duration(4000) // (2000)
           .attr ('transform', (d, i) => { 
+              //let locXY = calcSpacing(data, i);  
               let locXY =  calcSpacing(widths, i);
               return `translate(${locXY[0]}, ${locXY[1]}) scale(${1})`
            }) 
 
 
-      // -- draw the BLOCK (rect)  inside the GROUP -- // 
+      // -- draw the  -- 
       d3.select(svgRef.current)
           .selectAll('.blockLrg')
           .data(data)  
+          //.data (widths)  
           .attr('class', 'blockLrg')
           .transition()
-          .delay(delay)
-          .duration(duration) // (2000)
+          .delay(1000)
+          .duration(4000) // (2000)
+          //.attr('width', d => d.nodes.length*10) 
           .attr('width', (d, i) => { 
             return widths[i]; 
             }) //  
           .attr('opacity', 0.3)
 
-
-
-      // -- draw the BLOCK Tet)  inside the GROUP -- // 
-      d3.select(svgRef.current)
-          .selectAll('.blockText')
-          .attr('class', 'blockText')
-          .transition()
-          .delay(delay)
-          .duration(duration) // (2000)
-          .attr('x', 10)
-          .attr('y', ypos-10)
   }
 
 
@@ -131,13 +154,18 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBa
   return (
     <g ref={svgRef}>
 
-      <text 
-        x = {-1000}  
-        y = {-10} 
-        className="blockText"
-        fontSize= {"36px"} >
+      <text x = {10}  y = {ypos-10} fontSize= {"36px"} >
         {rowinfo.toUpperCase( )}
       </text>
+      <rect 
+          x={-80} 
+          y={ypos+10} 
+          width={50}
+          height={5}
+          fill={"darkgray"}
+          onClick={() => handleRemoveRow( )}
+
+        />
 
 
       {data.map((d, i) => {
@@ -146,18 +174,30 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBa
         let total_width = widths[i]
         //console.log ("total width = ", widths[i]);
         //console.log ("total nodes = ", d.nodes.length);
-        //console.log ("data for block = ", d)
 
         if (total_width > 0) { 
              d.nodes_sorted.forEach ((n,i) => { 
             let percentWidth = n.length/d.nodes.length * total_width
-            sub_widths[i] =  percentWidth; //(percentWidth);
+            sub_widths[i] = percentWidth; //(percentWidth);
           })
         }
 
+        // -- TO REMOVE -- // 
+            //console.log (sub_widths)
+            //console.log ('---------------')
+
+            // calculate widths for each subblock. 
+            // currently length for each subblock is number of makers * 10 
+
+            // I need it to be a percentage (always adding to 100.. )
+            // Actually this has to be 3 % values. 
+
+            // -- total width = widths[i] (max)
+            // -- total no. of makers = d.nodes.length; 
+            // -- 
+
 
         return (
-
           <BlockItemLarge
               key={i}
               id={i}
@@ -165,8 +205,6 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBa
               ypos={ypos}
               nodes={d.nodes}
               nodes_sorted={d.nodes_sorted}
-              blockVal={d.value}
-              rowValues = {rowSelection.values}
               sub_widths={sub_widths}
               handleSubBlocks = {handleSubBlocks}
               handleBlockSelection = {handleBlockSelection}
@@ -182,20 +220,16 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBa
 };
 
 
-const BlockItemLarge = ({id, index, ypos, nodes, nodes_sorted, sub_widths, blockVal, rowValues,
-          handleSubBlocks, handleBlockSelection, handleBlockRoll, handleRollOut} ) => {
+const BlockItemLarge = ({id, index, ypos, nodes, nodes_sorted, sub_widths, handleSubBlocks, 
+                             handleBlockSelection, handleBlockRoll, handleRollOut} ) => {
   let groupRef = useRef(null);
   let sublocs = useRef ([ ]); // xy loc of blocks (base)
-
-  // get the row selection (array)
 
 
       // ---------- // 
 
       useEffect( () => { 
         //console.log ('sub_widths  = ', sub_widths)
-        //console.log ("row values: ", rowValues); // a string of user selected items in row ... // 
-       // console.log ("block val ", blockVal); // the 'type' value (e.g. 'microscope' or 'London')
         drawBlockItems( );
 
         // send sub-block values - do this with wid values
@@ -204,9 +238,9 @@ const BlockItemLarge = ({id, index, ypos, nodes, nodes_sorted, sub_widths, block
       },[nodes_sorted])
 
 
-      // function calcWidth (item ) { 
-      //   return item.length * 10
-      // }
+      function calcWidth (item ) { 
+        return item.length * 10
+      }
 
 
 
@@ -230,62 +264,26 @@ const BlockItemLarge = ({id, index, ypos, nodes, nodes_sorted, sub_widths, block
           return  xpos;
       }
 
-      // -- draw a block for each of the nodes_sorted elements
+      // draw a block for each of the nodes_sorted elements
       const drawBlockItems = ( ) => { 
            d3.select(groupRef.current)
               .selectAll('.blockitem')
               .data(nodes_sorted)  
               .attr('class', 'blockitem')
               .transition( )
-              .delay(delay)
-              .duration(duration) //(2000)
+              .delay(1000)
+              .duration(4000) //(2000)
               .attr('x', (d, i)  => { return calcXPos2(sub_widths, i)}) // { return calcXPos(nodes_sorted, i) })
               .attr('y', 0)
               .attr('width', (d,i) => sub_widths [i]) // d.length*10)
               .attr('height', blockH)
               .attr ('fill', (d,i)  => { 
                     // 0 = flow, 1 = paths 3 = none
-                    let vals = rowValues.split(" ") 
-                    let hasValue = vals.includes (blockVal)
+                    return i === 0 ?  "OrangeRed"  : i === 1 ? "PowderBlue" : i === 2 ? "lightgray" : "black";
 
-                    let c0 = "OrangeRed" //"OrangeRed"
-                    let c1 = "PowderBlue"
-                    let c2 = "lightgray"
-
-                    if (hasValue == false) c0 = "DodgerBlue"
-                    return i === 0 ?  c0  : i === 1 ? c1 : i === 2 ? c2 : "black";
                     //return i === 0 ?  "OrangeRed"  : i === 1 ? "Gold" : i === 2 ? "PowderBlue" : "black";
               })
               .attr('opacity', 0.8)
-
-
-          d3.select(groupRef.current)
-              .selectAll('.blockitemLine')
-              .data(nodes_sorted)  
-              .attr('class', 'blockitemLine')
-              .transition( )
-              .delay(delay)
-              .duration(duration) //(2000)
-              .attr('x1', (d, i)  => { return calcXPos2(sub_widths, i)})
-              .attr('x2', (d, i)  => { return calcXPos2(sub_widths, i) + sub_widths [i]})
-              .attr('stroke', (d, i)=> { 
-                    // 0 = flow, 1 = paths 3 = none
-                    let vals = rowValues.split(" ") 
-                    let hasValue = vals.includes (blockVal)
-
-                    let c0 = "OrangeRed"
-                    let c1 = "PowderBlue"
-                    let c2 = "lightgray"
-
-                    if (hasValue == false) c0 = "DodgerBlue"
-                    return i === 0 ?  c0  : i === 1 ? c1 : i === 2 ? c2 : "black";
-
-                    //return "red"
-              })
-            
-
-
-
       }
 
       // set the position of the sub items - the block items -- // 
@@ -293,7 +291,7 @@ const BlockItemLarge = ({id, index, ypos, nodes, nodes_sorted, sub_widths, block
       const handleMouseOver = (grp, sub, event) => {
          //console.log ("bar index = ", index )
          //console.log ("group index = ", grp)
-         console.log ("mouse over bar");
+         //console.log ("mouse over bar", nodes_sorted);
          handleBlockRoll( index, grp, sub, event);
 
       };
@@ -315,7 +313,7 @@ const BlockItemLarge = ({id, index, ypos, nodes, nodes_sorted, sub_widths, block
   // --------- // 
   return (
       // -- a block group -- 
-    <g transform={`translate(${0}, ${0})`} ref={groupRef} className="blockGroupLrg">
+    <g transform={`translate(${0}, ${ypos})`} ref={groupRef} className="blockGroupLrg">
       <rect
         key={id}
         x={0}
@@ -327,9 +325,6 @@ const BlockItemLarge = ({id, index, ypos, nodes, nodes_sorted, sub_widths, block
         onMouseOver={() => handleMouseOver(id)}
 
       />
-
-
-
       { nodes_sorted.map ((d, i) => {
             //console.log ('id = ', id)
             let n = parseFloat(`${id}${i}`)
@@ -346,8 +341,6 @@ const BlockItem = ({id,  subIndex, grpIndex, handleMouseOver, handleMouseClick, 
 
   return (
       // -- nested block (rect)
-
-    <g>
       <rect
         key={id}
         x={0}
@@ -358,23 +351,8 @@ const BlockItem = ({id,  subIndex, grpIndex, handleMouseOver, handleMouseClick, 
         className="blockitem"
         onClick={() => handleMouseClick(grpIndex, subIndex)}
         onMouseOver={(event) => handleMouseOver(grpIndex, subIndex, event)}
-        onMouseLeave={()  => handleMouseOut(id)}
+       onMouseLeave={()  => handleMouseOut(id)}
       />
-
-      <line
-        key={id+1000}
-        x1={0}
-        y1={blockH+20}
-        x2={50}
-        y2={blockH+20}
-        className="blockitemLine"
-        stroke={"black"}
-        strokeWidth={10}
-        />
-
-
-
-     </g>
     );
 };
 

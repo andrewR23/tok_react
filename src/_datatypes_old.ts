@@ -2,7 +2,7 @@ import netClustering from 'netclustering';
 import makersJSON from './assets/allmakers_dates.json';
 
 // -- query string : to construct flows -- // 
-const queryString = 'towns==&advertised_instruments='; // 'towns=Chigwell&guilds=Clockmakers'; // 'towns=London&date>1800';
+const queryString = 'towns=';//=&advertised_instruments='; // 'towns=Chigwell&guilds=Clockmakers'; // 'towns=London&date>1800';
 
 // known_instruments advertised_instruments , towns, guilds 
 
@@ -76,12 +76,11 @@ export interface RowType {
     makers: MakerType[];
     makers_group: AttributeType[ ]; // all the makers 
     makers_sorted: MakerType[][ ];  // all the makers sorted into 0 1 2 
-    yspacing: number;
 }
 
 
 
-const allmakers = makersJSON.makers.slice (0,1000); // get a subset to test 
+const allmakers = makersJSON.makers.slice (0, 800); // get a subset to test 
 
 // get all the makers and and filter (remove if they have missing targets)
 const linkTypes = [
@@ -442,13 +441,14 @@ const queryItems = parseQueryString(queryString); // parse the query //
 // -- populate rowDataset -- //
 queryItems.forEach ((q, i)  => { 
     //console.log ('query = ', q)
-  rowsDataset.push ( { id : i, query: q, makers: [], makers_group: [], makers_sorted: [[],[], []], yspacing: i *100}) // create rows : no makers  
+  rowsDataset.push ( { id : i, query: q, makers: [], makers_group: [], makers_sorted: [[],[], []]}) // create rows : no makers  
   rowsDataset[i].makers_group= sortByAttribute ([...base_makers], rowsDataset[i].query.att) ;// this adds all the makers 
 
 })
-console.log ('rowsDataset:  = ', rowsDataset)
 
-export function addRow (rowdata: any, att: any) { 
+//console.log ('rowsDataset = ', rowsDataset)
+
+export function addRow (rowdata:any, att:any) { 
     //console.log ('add to row ', att)
     //console.log ('current row data ', rowdata)
 
@@ -459,7 +459,7 @@ export function addRow (rowdata: any, att: any) {
     rowdata[rowIndex].makers_group= sortByAttribute ([...base_makers], rowdata[rowIndex].query.att) ;// this adds all the makers 
     
     let temprows = sortRows(rowdata)
-    //console.log ('temp row data  = ', temprows)
+    console.log ('temp row data  = ', temprows)
 
     return rowdata
 
