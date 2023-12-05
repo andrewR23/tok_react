@@ -3,6 +3,7 @@
  body {
     margin: 0;
     padding: 30px;
+    padding-left: 80px;
   }
   
   .wrapper {
@@ -13,10 +14,8 @@
   .query-string {
       font-size: 16px;
       font-style: italic;
-      color: darkslategray;
       padding-bottom: 12px;
 
-      fill: darkslategray ;
 
   }
 
@@ -24,6 +23,20 @@
 /*  display: flex;
   align-items: center;*/
 }
+
+.blockText { 
+  font-size: 32px;
+
+
+ }
+
+ .blockTextSelections { 
+  font-style: italic;
+  font-size: 30px;
+
+
+ }
+
 
 
 

@@ -1,5 +1,7 @@
-//"use client"
+"use client"
 import React, { useEffect, useRef, useState } from 'react';
+import * as d3 from 'd3';
+import { select } from 'd3-selection';
 
 import { MakerType, LinkType, ClusterType, AttributeType} from './_datatypes'
 import { QueryType, RowType } from './_datatypes'
@@ -22,6 +24,7 @@ import { blueGrey } from '@mui/material/colors';
 
 import './styles.css'; // Import  custom CSS file
 
+// this is a changedd
 
 // components 
 import SocialCluster from './_forceGraph' ; // -- forceGraph js
@@ -79,12 +82,22 @@ const App: React.FC = () => {
     // -- UI -- 
     const [tooltip, setTooltip] = useState({ show:false, x:0, y:0, content:'...' });
 
-    const [baseY, setBaseY] = useState(80)
-    let barSpace = 1250;// gap between bars 
+    const [baseY, setBaseY] = useState(0)
+    
+   // let barSpace = 400;// gap between bars  -- the MAX bar space 
+    const [barSpace, setBarSpace] = useState(800)
+
+    let barWidth = 2500;
+
+    // const [dragStart, setDragStart] = useState(null);
+
+    let dragStartRef = useRef (null)
+    let dragYRef = useRef (0)
+    const [dragY, setDragY] = useState(0);
+    const [scrollY, setScrollY] = useState(0);
 
 
     useEffect ( ()=> { 
-        //console.log ('imported rows from rowData set = ', rowData)
          // -- update rows to start with -- //
         let updatedRowItems = updateRows( [...rowData]);
         setRowData (updatedRowItems)
@@ -125,10 +138,40 @@ const App: React.FC = () => {
 
     useEffect (() => { 
         //console.log ('row data is updated ')
-        //console.log ("new row data = ", rowData)
+        console.log ("new row data = ", rowData)
+        // 150 is the base for the alluvial 
+        setBaseY (((rowData[rowData.length-1].yspacing + 450) * 0.3 )* 2)
         setQueryString (extractQueryString( ))
 
     }, [rowData])
+
+    useEffect( ()=> { 
+        console.log ("drag Y ", dragY)
+    }, [dragY])
+
+
+    useEffect(() => { 
+        let rowTemp = [...rowData]; 
+
+        //console.log ('barspace = ', barSpace)
+        // update distances ... // 
+        let rowDistances = [ ];
+        for (let i=1; i<rowTemp.length; i++) { 
+            let d = rowTemp[i].yspacing - rowTemp[i-1].yspacing;
+            if (d > 100) d = barSpace; 
+            rowDistances.push (d)
+        }
+
+        // apply distances 
+        for (let i=1; i<rowTemp.length; i++) { 
+             rowTemp[i].yspacing  = rowTemp[i-1].yspacing + rowDistances[i-1];
+        }
+
+        updateRows(rowTemp);
+        setRowData (rowTemp)
+
+
+    }, [barSpace])
 
 
 
@@ -166,11 +209,6 @@ const App: React.FC = () => {
         if (Array.isArray(range)) {
             setDateRange(range);
             setMakers (filterByDateRange (range)); // fi
-
-            // setDateRange(range);
-            // setMakers (filterByDateRange (range)); // filter makers by date
-            // setMakers (filterMakersByAttribute('towns', 'London', true)); // filter makers by attribute
-
             
             let updatedGroups = filterSocialGroups( )
             setSocialGroups(updatedGroups);
@@ -184,7 +222,6 @@ const App: React.FC = () => {
     }
 
     function handleFilterReset ( ) { 
-            // let filtered
             //console.log ("filter reset")
             setMakersFilter (allmakers)
     }
@@ -200,19 +237,10 @@ const App: React.FC = () => {
             // update the base filtered makers -- // 
             setMakersFilter (filteredMakers)
 
-            //filterGroupBySize(1, 10)
-            //!!!!setMakers(filteredMakers); // this is what we used to do... //  
     }
 
     // -- call to update the groups of selected makers -  (UPDATE )
     function updateRows (data : any) {
-            //console.log ("update rows")
-            //console.log ("update the rows: the grouped makers in each row... ")
-            //console.log ('updated row new ', updatedRow)
-            // -- go through each row -- // 
-            // -- update the nodes 
-            // -- update the nodes_sorted 
-            // -- do this based on.. the row data 
             let updatedRow = data; // [...rowData]; // create a copy of the rowData.
 
             updatedRow.forEach ((row:any, i:number)  => { 
@@ -223,14 +251,9 @@ const App: React.FC = () => {
                 //updatedMakerGroups = updateSorted(updatedMakerGroups, [...rowData[i].makers_sorted])
                 updatedMakerGroups = updateSorted(updatedMakerGroups, row.makers_sorted); // [...rowData[i].makers_sorted])
                 updatedRow[i].makers_group = updatedMakerGroups;
-                // add a row spacing element 
-
-                //if (i == 1) row.yspacing += 300; 
-                //row.yspacing += 100; 
-
+ 
 
             })
-            //updatedRow[1].yspacing = 600
 
             // -- update flow & selected makers -- // 
             setFlowSelected ([rowData[rowData.length-1].makers_sorted[0], rowData[0].makers_sorted[0]])
@@ -427,13 +450,12 @@ const App: React.FC = () => {
     function calcRowWidths (data: any) { 
         //console.log ("no. of makers = ", allmakers.length) // 100%
         //console.log ("base makers = ", makers.length) // %
-        let orgWidth  = 2500; // svgWidth / scale 
+        let orgWidth  = barWidth; // svgWidth / scale 
         let totalWidth = (makers.length/allmakers.length * orgWidth + 200);//+ Math.random ()*1000;
         let widths  = [...data].map (d => d.nodes.length); 
 
         const sumValue = widths.reduce((acc, curr) => acc + curr, 0);
 
-        //console.log ("sum value = ", sumValue); // this is the accumlatio of all the widths
         // widths area percentage of total width 
         widths = widths.map (d => { 
                return Math.ceil (d / sumValue * totalWidth)  ; 
@@ -443,7 +465,6 @@ const App: React.FC = () => {
 
     // -------------------------- // 
     function renderBarComponents( ) { 
-        //console.log ("render bar")
         //console.log ("render row...  data   = ", rowData)
         if (rowData !== null  ) {
             return rowData.map((row:any, i:number) => {
@@ -451,13 +472,12 @@ const App: React.FC = () => {
                 let attribute = row.query.att; 
                 let values = row.query.value.join (' ')
                 let sourceData =  row.makers_group; /// barGroups[i];
-                let rowInfo = attribute + " : " + values;
+                let rowInfo = {title: attribute, values: values};
                 let rowSelection = { att: attribute, values: values }
                 //console.log ('row info = ', rowInfo)
                 let y = row.yspacing; /// i* barSpace; //row.yspacing;//row.yspacing;
 
                 // calc widths for each row.. 
-                 //console.log ('row source data = ', sourceData)
                 let widths = calcRowWidths(sourceData)
                 //console.log ("row widths = ", widths)
 
@@ -469,6 +489,7 @@ const App: React.FC = () => {
                                     handleBlockRoll={handleBlockRoll}
                                     handleRollOut={handleRollOut}
                                     removeRow={handleRemoveRow}
+                                    handleUIClick={handleUIClick}
                                     />)
             })
         } else { 
@@ -514,8 +535,8 @@ const App: React.FC = () => {
                             let targetValue = barItems[n+1].data[targetIndex].value;
                             let targetLoc = barItems[n+1].locs[targetIndex];
                                         
-                             let sourceSortedGrp : any = null; 
-                             let targetSortedGrp: any  = null;
+                             let sourceSortedGrp: any = null; 
+                             let targetSortedGrp: any = null;
 
                             // -- search source sorted -- 
                             for (let i=0; i < barItems[n].data[sourceGroup].nodes_sorted.length; i++) {
@@ -611,7 +632,7 @@ const App: React.FC = () => {
             }// -- end of for loop 
 
             //console.log ('links = ', linkList)
-            let filteredLinks = linkList[0].filter((link: any)  => link.targetGrp_sorted == 0);
+            let filteredLinks = linkList[0].filter((link:any) => link.targetGrp_sorted == 0);
             //console.log ('filtered links sourceGrp: ', filteredLinks.map (d => d.sourceGrp))
             //console.log ('filtered links target group: ', filteredLinks.map (d => d.targetGrp))
             //console.log ('filtered links makers: ',    filteredLinks.map (d => d.makers.map (maker => maker.id)))
@@ -627,91 +648,87 @@ const App: React.FC = () => {
 
     // -- click on a sub item in the bar -- //
     function handleBlockSelection (barIndex:number, groupIndex:number,  itemIndex:number, selection:any[]) { 
-        // -- console.log ("CLICK THE BAR.....", barIndex, " ", groupIndex, " ", itemIndex)
+         console.log ("CLICK THE BAR.....", barIndex, " ", groupIndex, " ", itemIndex)
 
-        let rowTemp = [...rowData]
-        let selectedValue = rowData[barIndex].makers_group[groupIndex].value
-        let valueArray = rowTemp[barIndex].query.value;
-        // console.log ("current query = ", valueArray.length)
+        // limit to group 0 or 1 
 
-        // push value to array or remove
-        if (!valueArray.includes (selectedValue)) { 
-            valueArray.push(selectedValue); // add to query value array 
-        } else { 
-            // remove 
-            console.log ("REMOVE ... !! ")
-            rowTemp[barIndex].query.value = valueArray.filter (val => val != selectedValue) 
-            // and remove all other querys below - 
-            if (rowTemp[barIndex].query.value.length <= 1) {
-                for (let i=barIndex+1; i<rowTemp.length; i++) { 
-                    // remove other query elements below ... to remove 
-                    rowTemp[i].query.value = [""]
-                    //console.log ('other query to remove ....', rowTemp[i].query.value)
-                }
-            }
-        }
-
-        rowTemp = sortRows(rowTemp) ;               // update rows selection (in data )
-        let updatedRowItems = updateRows(rowTemp); // update the groups in the rows 
-        
-        // update y pos of row -- 
-        let updatedValueArray = rowTemp[barIndex].query.value; 
-        // console.log ("updated rows : ", updatedRowItems);
-        // console.log ("updated query : ", updatedValueArray.length)      
-        // the query starts with an empty string ("")
-        if (barIndex < rowTemp.length-1) {
-
-            // I click a bar.. the next bar moves + 500 -- the next bar moves to 500 
-            //  for (let i=0; i<rowTemp.length; i++)  { 
-            // //     // get this bar and next bar. 
-            //         let thisbar = rowTemp[i]; 
-            //         let nextbar = rowTemp[i+1] 
-            //         console.log ("this / next bar ... ", thisbar, "  ", nextbar)
-            //  }
+         if (itemIndex != 2) { 
 
 
-            if (updatedValueArray.length == 2) { 
-                // -- updatedRowItems[barIndex+1].yspacing = updatedRowItems[barIndex].yspacing + 900;
-                // -- get the next bars down in turn : and move them 
-                for (let i=barIndex; i<updatedRowItems.length-1; i++)  { 
-                    let nextbar = updatedRowItems[i+1];
-                    let thisbar = updatedRowItems[i];
-                    let y; 
-                    if (i-barIndex == 0)  y = 1200; 
-                    if (i-barIndex >= 1)  y = 100; 
-                    //y = (i- barIndex === 0) ? 900 : (i) - barIndex >=0) ? 100 : undefined;
-                    nextbar.yspacing = thisbar.yspacing + y;
-                }
-            }
+                let rowTemp = [...rowData]
+                let selectedValue = rowData[barIndex].makers_group[groupIndex].value
+                let valueArray = rowTemp[barIndex].query.value;
+                // console.log ("current query = ", valueArray.length)
 
-            if (updatedValueArray.length == 1) { 
-                //updatedRowItems[barIndex+1].yspacing = updatedRowItems[barIndex].yspacing + 100
-
-
-                for (let i=barIndex; i<updatedRowItems.length-1; i++)  { 
-                    let nextbar = updatedRowItems[i+1];
-                    let thisbar = updatedRowItems[i];
-                    let y; 
-                    if (i-barIndex == 0)  y = 100; 
-                    if (i-barIndex >= 1)  y = 100; 
-                    //y = (i- barIndex === 0) ? 900 : (i) - barIndex >=0) ? 100 : undefined;
-                    nextbar.yspacing = thisbar.yspacing + y;
+                // push value to array or remove
+                if (!valueArray.includes (selectedValue)) { 
+                    valueArray.push(selectedValue); // add to query value array 
+                } else { 
+                    // remove 
+                    //console.log ("REMOVE ... !! ")
+                    rowTemp[barIndex].query.value = valueArray.filter (val => val != selectedValue) 
+                    // and remove all other querys below - 
+                    if (rowTemp[barIndex].query.value.length <= 1) {
+                        for (let i=barIndex+1; i<rowTemp.length; i++) { 
+                            // remove other query elements below ... to remove 
+                            rowTemp[i].query.value = [""]
+                            //console.log ('other query to remove ....', rowTemp[i].query.value)
+                        }
+                    }
                 }
 
-            }
-        }   
+                rowTemp = sortRows(rowTemp) ;               // update rows selection (in data )
+                let updatedRowItems = updateRows(rowTemp); // update the groups in the rows 
+                
+                // update y pos of row -- 
+                let updatedValueArray = rowTemp[barIndex].query.value; 
+                // console.log ("updated rows : ", updatedRowItems);
+                // console.log ("updated query : ", updatedValueArray.length)      
+                // the query starts with an empty string ("")
+                if (barIndex < rowTemp.length-1) {
 
-        // get clicked bar.. 
-        setRowData (updatedRowItems)
-        setQueryString (extractQueryString( ))
+                    if (updatedValueArray.length == 2) { 
+                        // -- updatedRowItems[barIndex+1].yspacing = updatedRowItems[barIndex].yspacing + 900;
+                        // -- get the next bars down in turn : and move them 
+                        for (let i=barIndex; i<updatedRowItems.length-1; i++)  { 
+                            let nextbar = updatedRowItems[i+1];
+                            let thisbar = updatedRowItems[i];
+                            let y; 
+                            if (i-barIndex == 0)  y = barSpace; 
+                            if (i-barIndex >= 1)  y = 100; 
+                            //y = (i- barIndex === 0) ? 900 : (i) - barIndex >=0) ? 100 : undefined;
+                            nextbar.yspacing = thisbar.yspacing + y;
+                        }
+                    }
+
+                    if (updatedValueArray.length == 1) { 
+                        //updatedRowItems[barIndex+1].yspacing = updatedRowItems[barIndex].yspacing + 100
+
+
+                        for (let i=barIndex; i<updatedRowItems.length-1; i++)  { 
+                            let nextbar = updatedRowItems[i+1];
+                            let thisbar = updatedRowItems[i];
+                            let y; 
+                            if (i-barIndex == 0)  y = 100; 
+                            if (i-barIndex >= 1)  y = 100; 
+                            //y = (i- barIndex === 0) ? 900 : (i) - barIndex >=0) ? 100 : undefined;
+                            nextbar.yspacing = thisbar.yspacing + y;
+                        }
+
+                    }
+                }   
+
+                // get clicked bar.. 
+                setRowData (updatedRowItems)
+                setQueryString (extractQueryString( ))
+
+            }
 
     }
 
     // -- roll over sub item
     function handleBlockRoll (barIndex:number, groupIndex:number, subIndex:number, event:MouseEvent) { 
         //console.log ('blockRoll: ', barIndex, ' ', groupIndex, ' ', subIndex)
-        
-
         // ---------------------- // 
         // test values -- // 
         let makersInGrpRed = rowData[barIndex].makers_group[groupIndex].nodes_sorted[0];
@@ -725,9 +742,9 @@ const App: React.FC = () => {
 
 
         //console.log ('row item:  ', rowData[barIndex].makers_group[groupIndex])
-        console.log ("red : ", makersInGrpRed.map (d => d.id))
-        console.log ("blue: ", makersInGrpYellow.map (d => d.id))
-        console.log ("gray: ", makersInGrpGray.map (d => d.id))
+        //console.log ("red : ", makersInGrpRed.map (d => d.id))
+        //console.log ("blue: ", makersInGrpYellow.map (d => d.id))
+        //console.log ("gray: ", makersInGrpGray.map (d => d.id))
 
 
         // ---------------------- // 
@@ -746,11 +763,11 @@ const App: React.FC = () => {
         setTooltip({ show: false, x : 0, y: 0, content: `` });
     }
 
-    function handlePathRoll (data: any , path: any, event: MouseEvent) { 
+    function handlePathRoll (data:any, path:any, event: MouseEvent) { 
         //console.log ("rollover path ", data, '  ', path);
 
         if (path.pathType != 12)  {
-            const ids = data.makers.map ((d: any)  => d.id)
+            const ids = data.makers.map ((d:any) => d.id)
             const mouseX = event.clientX;
             const mouseY = event.clientY + window.scrollY;
             setTooltip({ show: true, x : mouseX+30, y: mouseY+10, content: `${ids}` });
@@ -776,7 +793,7 @@ const App: React.FC = () => {
      }
 
     // --- add row -- // 
-    function handleAddRow (value: any ) { 
+    function handleAddRow (value: any) { 
         //console.log ('handle add row', rowData)
 
         //console.log ('current rows ', rowData )
@@ -784,9 +801,10 @@ const App: React.FC = () => {
 
         // add a new row - set spacing to previous y pos
         // has the previous row got any s
-        let valNum = updatedRow[rowData.length-1].query.value.length;
+        let valCount= updatedRow[rowData.length-1].query.value.length;
+        
         //let yspace = 900; 
-        let yspace = valNum >= 2 ? 1200  : 100;
+        let yspace = valCount >= 2 ? barSpace  : 100;
         updatedRow[rowData.length].yspacing = updatedRow[rowData.length-1].yspacing + yspace;
 
 
@@ -819,22 +837,101 @@ const App: React.FC = () => {
     }
 
     function handleLocations (locs: any) {
-       // console.log ("udpated locations -- ", locs)
         setNodeLocs (locs);
-        console.log ('node locs : ', nodeLocs)
 
-        // draw lines from node locs to groups .. 
     }
 
     function drawPaths ( ) { 
 
     }
 
+    function updateRowDist (amt: any) { 
+        let newspace = barSpace + amt 
+        setBarSpace (newspace)
+    }
+
+    function handleUIClick (name: any, id: number, data: any ) { 
+        let rowTemp = [...rowData]; 
+
+        // -- save current distances between rows -- // 
+        let rowDistances = [ ];
+        for (let i=1; i<rowTemp.length; i++) { 
+            let d = rowTemp[i].yspacing - rowTemp[i-1].yspacing;
+            rowDistances.push (d)
+        }
+
+        // -- expand -- // 
+        if (name == 'buttonExpand') {
+            // -- update distances -- one down 
+            rowTemp[id+1].yspacing = rowTemp[id].yspacing + barSpace; // rowTemp[id-1].yspacing + 1000; 
+            // -- other following -- two down - use saved distances -- // 
+            for (let i = id+2; i<rowTemp.length; i++) { 
+                rowTemp[i].yspacing = rowTemp[i-1].yspacing + rowDistances[i-1]
+            }
+
+        }
+
+        // -- contract -- //
+        if (name == 'buttonHide') {
+            // -- update distances -- one down 
+            rowTemp[id+1].yspacing = rowTemp[id].yspacing + 100; // rowTemp[id-1].yspacing + 1000; 
+            // -- other following -- two down - use saved distances -- // 
+            for (let i = id+2; i<rowTemp.length; i++) { 
+                rowTemp[i].yspacing = rowTemp[i-1].yspacing + rowDistances[i-1]
+            }
+        } 
+
+        updateRows(rowTemp);
+        setRowData (rowTemp)
+
+    }
+
+    // -- DRAG EVENTS -- // 
+const handleMouseDown = (e:any) => {
+    //console.log ("mouse down", e.clientY)
+    dragStartRef.current = e.clientY
+    //setDragStart(e.clientY);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+};
+
+const handleMouseMove = (e:any) => {
+    //console.log ('mouse move', dragStartRef.current)
+    if (dragStartRef.current !== null) {
+         const deltaY = e.clientY - dragStartRef.current;
+         const dragYTemp = dragY + deltaY
+
+               const clampedDrag = Math.max(-1000, Math.min(0, dragYTemp));
+           setDragY(clampedDrag);
+         }
+    };
+
+const handleMouseUp = () => {
+        dragStartRef.current = null
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+};
+
+const handleWheel = (e:any) => {
+    // Check if the event is from a two-finger scroll (e.g., on a touchpad)
+    if (e.nativeEvent.ctrlKey) {
+      // Extract the scroll movement
+      const deltaY = e.deltaY;
+      
+      // Adjust the scroll position
+      setScrollY((prevScrollY) => prevScrollY + deltaY);
+      //console.log ("handle wheel")
+      
+      // Prevent the default scroll behavior
+      //e.preventDefault();
+    }
+  };
+
+
 
   return (
     <div>
-
-      <div>Ver_27_1v1</div>  
+      <div>Ver_05_12</div>  
        <ThemeProvider theme={guitheme}>
            <div className="slider-container">
                 <Slider
@@ -856,23 +953,41 @@ const App: React.FC = () => {
                 <Button variant="text" onClick={() => setLayout('force')}>force</Button> 
                 <Button variant="text" onClick={() => setLayout('linear')}>linear</Button> 
                 <Button variant="text" onClick={() => setLayout('grid')}>grid</Button> 
+                <Button variant="text" onClick={() => updateRowDist(100 )}>[+]</Button> 
+                <Button variant="text" onClick={() => updateRowDist(-100 )}>[-]</Button> 
+
+
             </div>
 
 
-             <svg width="1500" height="1300">
+             <svg  
+                onMouseDown={handleMouseDown} 
+                onWheel={handleWheel}
+                // style={{ cursor: 'grab', userSelect: 'none' }}
+                width="1500" 
+                height="700"
+             >
                    <rect width="100%" height="100%" fill="OldLace" />
                 {/*<QueryString querystring = {queryString}/>*/}
 
                 {/*Bar and Paths */}
-                <g transform ='translate(150, 40) scale (.33)'>
+                <g transform ={`translate(${150}, ${40+dragY}) scale(${.33})`}>
                     {renderPathComponents()}
                     {renderBarComponents()}
                 </g>
                 {/*Force Graph  */}
-            {/*    <g transform={`translate(${20}, ${baseY}) scale(${0.5})`}>
-                    <SocialCluster nodes={socialGroups} layout={layout} daterange={dateRange} flowselected={flowSelected} handleLocations={handleLocations} 
-                        handleNodeRoll={handleNodeRoll} handleRollOut={handleRollOut}/>
-                </g>*/}
+                <g transform={`translate(${100}, ${dragY}) scale(${.5})`}>
+                    <SocialCluster 
+                        nodes={socialGroups} 
+                        layout={layout} 
+                        baseY={baseY}
+                        daterange={dateRange} 
+                        flowselected={flowSelected} 
+                        handleLocations={handleLocations} 
+                        handleNodeRoll={handleNodeRoll} 
+                        handleRollOut={handleRollOut}
+                        />
+                </g>
              </svg>
              
              <div>         

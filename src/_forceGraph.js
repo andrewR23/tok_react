@@ -4,11 +4,15 @@ import { select } from 'd3-selection';
 
 const dateScale = d3.scaleLinear(); //.domain([1500, 1950]).range([0, 900])
 
+let delay = 3000; 
+let duration = 4000;
+
+let yHeight = 900; 
 
 
-const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations }) => {
+const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLocations, handleNodeRoll, handleRollOut}) => {
       let svgRef = useRef(null);
-      const dateScaleRef = useRef(d3.scaleLinear().domain([1500, 1950]).range([0, 900]));
+      const dateScaleRef = useRef(d3.scaleLinear()); //.domain([1500, 1950]).range([0, 900]));
       const [animatedNodes, setAnimatedNodes] = useState([]); // this is the array of nodes to ref which gets updated 
 
       //const [visGrps, setVisGrps] = useState([]); 
@@ -21,9 +25,13 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations
       //let grpItems = useRef([])
       const [grpItems, setGrpItems] = useState([])
 
+      const [scaleState, setScaleState] = useState ([1]);
 
       
       useEffect(() => { 
+          // console.log ("drag Y = ", dragY)
+           drawTimeLine( )
+
           setAnimatedNodes ([...nodes])
           if (layout == "force")  forceMove();
           if (layout == "linear") linearMove( );
@@ -34,34 +42,28 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations
           let visibleGrps  = nodes.filter (d => d.nodes.length> 0);
           //setVisGrps (visibleGrps)
 
-          //console.log ('UPDATE social groups:  ')
-          //console.log ("visible groups = ", visibleGrps);
-          //setGrpCount (nodes.length) 
-          //console.log ('grp locs = ', grpLocs)
-
           //
           let frameW = 2900; 
           setHozSpacing (frameW/visibleGrps.length)
 
           // handle updated locs.. -- // 
           //handleLocations (grpItems)
+          drawGroup( )
+         
 
-      }, [nodes, layout, flowselected])
+
+      }, [nodes, layout, flowselected, baseY])
 
 
-      // --- -// 
+      // ----// 
       useEffect(() => { 
         let grpItems = [ ];
-        //console.log ('group locs = ', grpLocs)
-        //console.log ('subLocs locs = ', subLocs.current)
         grpLocs.forEach ((g, i) => { 
            let locItem = { grpLoc:  grpLocs[i], subLocs: subLocs.current[i]} ; // 
            grpItems.push (locItem);
         }) 
 
-
         setGrpItems (grpItems)
-        
         handleLocations (grpItems)
 
       }, [grpLocs])
@@ -75,12 +77,11 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations
 
 
 
-
-     useEffect( ()=> { 
+      // ---- // 
+      useEffect( ()=> { 
           // show date range & use date range to set the height range 
-          // console.log ('date range = ', daterange) 
-          dateScaleRef.current = d3.scaleLinear().domain([daterange[0], daterange[1]]).range([0, 900*2]);
-          //dateScale == d3.scaleLinear().domain([daterange[0], daterange[1]]).range([0, 200]);
+          console.log ('date range = ', daterange) 
+          dateScaleRef.current = d3.scaleLinear().domain([daterange[0], daterange[1]]).range([0, yHeight]);
 
       }, [daterange])
 
@@ -92,7 +93,7 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations
 
 
      function sortByDate (nodes) { 
-        console.log ('sort by date')
+        //console.log ('sort by date')
         nodes.forEach (d => {
          if (d.nodes.length > 0) {
             d.nodes = d.nodes.sort((a, b) => a.date_1 - b.date_1); // 
@@ -102,8 +103,20 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations
 
 
       // -- draw  -- //
+
+      function drawGroup ( ) { 
+        d3.select(svgRef.current)
+          .transition()
+          .delay(500)
+          .duration(1500)
+          .attr ('transform', `translate(${0}, ${baseY}) scale(${scaleState})`)
+
+
+      }
+
+
       function forceMove  () {
-          let offsetX = 1500;
+          let offsetX = 1100;
           // ------------- // 
           locs.current = [ ]; 
           const simulation = d3
@@ -126,7 +139,7 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations
           // -- calc height force here ... get height of the nodes (min max y)
           let minY = Math.min(...animatedNodes.map(function (obj) {return obj.y}));
           let maxY = Math.max(...animatedNodes.map(function (obj) {return obj.y}));
-          let height  = (maxY - minY) * 0.5;    
+          let height  = (maxY - minY) * 1;    
           //console.log ("minY  = ", minY, ' maxY = ', maxY);
           //console.log ("height ", height);
 
@@ -139,8 +152,8 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations
               .data(nodes)  
               .attr('class', 'largecircleGrp')
               .transition()
-              .delay(3000)
-              .duration(4000)
+              .delay(delay)
+              .duration(duration)
               .attr ('transform', (d, i) => { 
                   let x = d.x + offsetX
                   let y = d.y + height
@@ -159,8 +172,8 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations
               .data(nodes)  
               .attr('class', 'largecircle')
               .transition()
-              .delay(3000)
-              .duration(4000)
+              .delay(delay)
+              .duration(duration)
               .attr('r', d => d.nodes.length * 10)
               //.attr('fill', 'red')
               .attr('opacity', 0.1)
@@ -185,8 +198,8 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations
               .data(nodes)
               .attr('class', 'largecircleGrp')
               .transition()
-              .delay(3000)
-              .duration(4000)
+              .delay(delay)
+              .duration(duration)
               .attr ('transform', (d, i) => { 
                   let x = visCount * hozSpacing + 50; //  - 550 
                   let y =  d.nodes.length=== 0 ?  20000 : dateScaleRef.current (d.nodes[0].date_1); 
@@ -208,10 +221,10 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations
               .data(nodes)  
               .attr('class', 'largecircle')
               .transition()
-              .duration(4000)
-              .attr('r',  d => d.nodes.length * 2)
+              .duration(duration)
+              .attr('r',  d => d.nodes.length * 5)
               //.attr('fill', 'green')
-              .attr('opacity', 0.1)
+              .attr('opacity', 0.15)
 
           // 
           //console.log ("linear locs ", locs)
@@ -230,7 +243,7 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations
               .data(nodes)  
               .attr('class', 'largecircleGrp')
               .transition()
-              .duration(4000)
+              .duration(duration)
               // .attr('cx', (d, i) => i * 50 + 60) // cx and cy are used for a circle 
               // .attr('cy', 200)
               .attr ('transform', (d, i) => { 
@@ -261,12 +274,69 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations
 
       }
 
+
+        function drawTimeLine ( ) { 
+          let x = layout == 'linear'  ?  -100 :-200
+          let liney = layout == 'linear'  ?  0 :10000
+
+          d3.select(svgRef.current)
+            .selectAll('.timeline')
+             .transition()
+            .delay(0)
+            .duration(duration)
+            .attr('class', 'timeline')
+            .attr ('x', x)
+            .attr ('y', 0)
+            .attr ('fill', 'none')
+
+
+          // draw date scale- ticks 
+            const yDates = d3.axisLeft(dateScaleRef.current)
+              .tickFormat(d3.format('d')) // Display years as integers
+              .ticks(10); // Adjust the number of ticks as needed
+
+          d3.select(svgRef.current)
+                .selectAll('.y-axis')
+                .data([null]) // Use a single-element array for a one-time creation
+                .join('g')
+                .transition()
+                .delay(0)
+                .duration(duration)
+                .attr('class', 'y-axis')
+                .attr('transform', `translate(${x}, 0)`) // Adjust the horizontal position
+                .attr ('stroke', 'LightCyan')
+                .attr ('fill', 'none')
+                .call(yDates)
+                .selectAll('text') // Select all text elements in the axis
+                .style('font-size', '20px'); // Adjust the font size as needed
+
+           // -- add more lines 
+           d3.select(svgRef.current)
+                .selectAll('.borderline')
+                .transition()
+                .delay(0)
+                .duration(duration)
+                .attr('class', 'borderline')
+                .attr('opacity', 1)
+                .attr('x1', 20)
+                .attr('y1', liney)
+                .attr('x2', 2300)
+                .attr('y2', liney)
+                .attr('stroke-width', 1.5 )
+
+
+
+       
+              
+
+        }
+
       // ---- // 
       const changeFade = (id) => { 
           d3.select(svgRef.current)
             .selectAll('.largecircle')
             .transition()
-            .duration(1000)
+            .duration(duration*.25)
             .attr('class', 'largecircle')
             // .attr('fill', 'pink')
             .attr('opacity', (d, i) => { 
@@ -274,7 +344,21 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations
             })
       }
 
-      const changeScale = (id) => { 
+      function changeScale (id) { 
+
+         // -- scale the whole group -- // 
+         d3.select(svgRef.current)
+              .transition( )
+              .duration(duration)
+              .attr('transform', function (d, i) { 
+                const translateGrp = `translate(${10}}, ${10}) scale(${.2})`;
+                return translateGrp
+
+                })
+          //setScaleState (0.1)
+
+
+          // // -- scale rolled item item with selected ID -- //   
           d3.select(svgRef.current)
               .selectAll('.largecircleGrp')
               .attr('class', 'largecircleGrp')
@@ -296,7 +380,17 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations
 
       const reset = ( ) => { 
 
-          // -- reset group scale -- 
+         // -- reset the whole group -- // 
+           // d3.select(svgRef.current) 
+           //      .transition( )
+           //      .duration(5000)
+           //      .attr('transform', function (d, i) { 
+           //        const translateGrp = `translate(${0}}, ${0}) scale(${1})`;
+           //        return translateGrp
+
+           //  })
+
+          // -- reset circle scale -- 
           d3.select(svgRef.current)
               .selectAll('.largecircleGrp')
               .attr('class', 'largecircleGrp')
@@ -321,46 +415,54 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations
             .duration(1000)
             .attr('class', 'largecircle')
             // .attr('fill', 'green')
-            .attr('opacity', 0.4)
+            .attr('opacity', 0.2)
 
 
       }
 
 
-      function updateGroupLocs (selection) { 
-        // get the group pos for the large circle. 
-        // let locs = [ ] 
-        // //console.log ('update group loc')
-        // selection.each(function(d) {
-        //   //console.log ("group data = ", d)
-        //   let transform  = d3.select(this).attr ('transform')
-        //   const match = transform.match(/translate\(([^,]+),([^)]+)\)/);
-        //   const tX = parseFloat(match[1]);
-        //   const tY = parseFloat(match[2]);
-        //   console.log ('transform =', tX, ' ', tY)
-        //   locs.push ([tX, tY])
-
-        // });
-
-        //setGrpLocs (locs)
-
-      }
 
       // ---- //
       const handleMouseOver = (id) => {
         //changeFade(id)
         //changeScale(id)
+        handleNodeRoll( );
       };
 
       const handleMouseOut = (id) => {
-        // reset ( ); // opacity (1. scale 1)
+        //reset ( ); // opacity (1. scale 1)
       };
 
 
 
 
       return (
-        <g ref={svgRef} transform={"translate(0, 0) scale(1)"}>
+        <g ref={svgRef} 
+            key={0}
+            id={0}
+            className={'socialgroup'}
+            transform={`translate(${0}, ${-1000}) scale(${scaleState})`} 
+            >
+
+          <line 
+            x1={0}
+            y1={0}
+            x2={2500}
+            y2={0}
+            stroke="darkGray"
+            className={"borderline"}
+            strokeWidth={2}
+
+          />
+
+
+
+          <TimeLine
+            key={0}
+            id ={0}
+          />
+
+
           {/*{console.log("Current data:", nodes.map (d => d)) } visGroup OR nodes*/}
           {nodes.map((d, i) => {
             return (
@@ -374,9 +476,10 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations
                   handleMouseOver={handleMouseOver}
                   handleMouseOut ={handleMouseOut}
                   handleSubLocs = {handleSubLocs}
+                  handleNodeRoll ={handleNodeRoll}
+                  handleRollOut={handleRollOut}
                   dateScale = {dateScaleRef.current}
                   opacity={0.4}
-
 
               />
 
@@ -389,7 +492,7 @@ const SocialCluster = ({ nodes, layout, flowselected, daterange, handleLocations
 
 // ------------------------ // 
 // this is like a cluster group which contains sub ndata
-const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMouseOver, handleMouseOut, handleSubLocs}) => {
+const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMouseOver, handleMouseOut, handleSubLocs, handleNodeRoll, handleRollOut}) => {
   let groupRef = useRef(null);
   const [animatedNodes, setAnimatedNodes] = useState([]); // this is the array of nodes to ref which gets updated 
   const [animatedLinks, setAnimatedLinks] = useState(links); // this is the array of nodes to ref which gets updated 
@@ -587,7 +690,7 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
   // function for mouse over small circle
   const handleMouseOverSmall = (id) => {
       // Handle mouse over event for a specific bar
-        console.log('Mouse over circle with ID:', id);
+        //console.log('Mouse over circle with ID:', id);
 
   };
 
@@ -614,6 +717,8 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
                       key={d.id} 
                       id={d.id} 
                       handleMouseOverSmall={handleMouseOverSmall} 
+                      handleNodeRoll = {handleNodeRoll}
+                      handleMouseOut = {handleMouseOut}
                    />
         }) }
 
@@ -630,7 +735,7 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
 
 // ------------------------ // 
 
-const CircleSmall = ({id, handleMouseOverSmall}) => {
+const CircleSmall = ({id, handleMouseOverSmall, handleNodeRoll, handleMouseOut}) => {
  //let svgRef = useRef(null);
 
 
@@ -646,7 +751,9 @@ const CircleSmall = ({id, handleMouseOverSmall}) => {
         //fill="orangered"
         // opacity={0.8}
         className="smallcircle"
-        onMouseOver={() => handleMouseOverSmall(id)}
+        onMouseOver={(event) => handleNodeRoll(id, event)} ///handleMouseOverSmall(id)}
+        onMouseLeave={()  => handleMouseOut(id)}
+
 
       />
     );
@@ -669,6 +776,27 @@ const LinkSmall = ({id}) => {
         className="linksmall"
       />
     );
+};
+
+const TimeLine = ({id}) => { 
+
+    return (
+      // -- link to 
+
+      <g>
+        <rect
+          key={id}
+          x={10}
+          y={0}
+          width={10}
+          height={1000}
+          className ="timeline" 
+        />
+
+      </g>
+      
+    );
+
 };
 
 

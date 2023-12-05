@@ -4,15 +4,17 @@ import { select } from 'd3-selection';
 // import * as  Vec2D from 'victor';
 // import * as f from './functions.js';
 import { Tooltip, Typography } from '@mui/material';
+// import {AddIcon} from '@material-ui/icons/Add';
+// import AddIcon from '@mui/icons-material/Add';
 
 
 let blockH = 40; 
-let delay = 0; 
-let duration = 4000
+let delay = 500; 
+let duration = 1500
 
 
 const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBarData, handleBlockSelection, handleBlockRoll, handleRollOut,
-                        removeRow}) => {
+                        removeRow, handleUIClick}) => {
   let svgRef = useRef(null);
 
   
@@ -116,14 +118,54 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBa
           .transition()
           .delay(delay)
           .duration(duration) // (2000)
+          .attr('x', 0)
+          .attr('y', ypos+blockH*.8)
+          .attr('fill', 'gray')
+
+
+
+    d3.select(svgRef.current)
+          .selectAll('.blockTextSelections')
+          .attr('class', 'blockTextSelections')
+          .transition()
+          .delay(delay)
+          .duration(duration) // (2000)
           .attr('x', 10)
-          .attr('y', ypos-10)
+          .attr('y', ypos-7)
+          .attr('fill', 'gray')
+
+
+        d3.select(svgRef.current)
+          .selectAll('.buttonExpand')
+          .attr('class', 'buttonExpand')
+          .transition()
+          .delay(delay)
+          .duration(duration) // (2000)
+          .attr('cx',2500+900)
+          .attr('cy', ypos+blockH/2 )
+
+        d3.select(svgRef.current)
+          .selectAll('.buttonHide')
+          .attr('class', 'buttonHide')
+          .transition()
+          .delay(delay)
+          .duration(duration) // (2000)
+          .attr('cx',2500+900+60)
+          .attr('cy', ypos+blockH/2 )
+
+
   }
 
 
   function handleRemoveRow ( ) {
       removeRow( )
   };
+
+  function clickRect ( ) { 
+
+    //console.log ("clicked rect");
+    //ypos += 100
+  }
 
 
 
@@ -135,9 +177,43 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBa
         x = {-1000}  
         y = {-10} 
         className="blockText"
-        fontSize= {"36px"} >
-        {rowinfo.toUpperCase( )}
+        fontSize= {"36px"} 
+        textAnchor={"end"}>
+        {rowinfo.title.toUpperCase( )}
       </text>
+
+      <text 
+        x = {-1000}  
+        y = {-10} 
+        className="blockTextSelections"
+        fontSize= {"36px"} 
+        >
+        {rowinfo.values.toUpperCase( )}
+      </text>
+
+      <circle
+        cx ={-1000}
+        cy = {0}
+        r ={blockH/2}
+        // height = {blockH}
+        className="buttonExpand"
+        fill = {"gray"}
+        onClick={(event) => handleUIClick( 'buttonExpand', index, rowSelection)}
+
+        />
+
+        <circle
+        cx ={-1000}
+        cy = {0}
+        r ={blockH/2}
+        // height = {blockH}
+        className="buttonHide"
+        fill = {"darkgray"}
+        //onClick={() => clickRect( )}
+        onClick={(event) => handleUIClick('buttonHide', index, rowSelection)}
+
+
+        />
 
 
       {data.map((d, i) => {
@@ -252,36 +328,36 @@ const BlockItemLarge = ({id, index, ypos, nodes, nodes_sorted, sub_widths, block
                     let c1 = "PowderBlue"
                     let c2 = "lightgray"
 
-                    if (hasValue == false) c0 = "DodgerBlue"
+                    if (hasValue == false) c0 = "Gray"
                     return i === 0 ?  c0  : i === 1 ? c1 : i === 2 ? c2 : "black";
                     //return i === 0 ?  "OrangeRed"  : i === 1 ? "Gold" : i === 2 ? "PowderBlue" : "black";
               })
               .attr('opacity', 0.8)
 
 
-          d3.select(groupRef.current)
-              .selectAll('.blockitemLine')
-              .data(nodes_sorted)  
-              .attr('class', 'blockitemLine')
-              .transition( )
-              .delay(delay)
-              .duration(duration) //(2000)
-              .attr('x1', (d, i)  => { return calcXPos2(sub_widths, i)})
-              .attr('x2', (d, i)  => { return calcXPos2(sub_widths, i) + sub_widths [i]})
-              .attr('stroke', (d, i)=> { 
-                    // 0 = flow, 1 = paths 3 = none
-                    let vals = rowValues.split(" ") 
-                    let hasValue = vals.includes (blockVal)
+          // d3.select(groupRef.current)
+          //     .selectAll('.blockitemLine')
+          //     .data(nodes_sorted)  
+          //     .attr('class', 'blockitemLine')
+          //     .transition( )
+          //     .delay(delay)
+          //     .duration(duration) //(2000)
+          //     .attr('x1', (d, i)  => { return calcXPos2(sub_widths, i)})
+          //     .attr('x2', (d, i)  => { return calcXPos2(sub_widths, i) + sub_widths [i]})
+          //     .attr('stroke', (d, i)=> { 
+          //           // 0 = flow, 1 = paths 3 = none
+          //           let vals = rowValues.split(" ") 
+          //           let hasValue = vals.includes (blockVal)
 
-                    let c0 = "OrangeRed"
-                    let c1 = "PowderBlue"
-                    let c2 = "lightgray"
+          //           let c0 = "OrangeRed"
+          //           let c1 = "PowderBlue"
+          //           let c2 = "lightgray"
 
-                    if (hasValue == false) c0 = "DodgerBlue"
-                    return i === 0 ?  c0  : i === 1 ? c1 : i === 2 ? c2 : "black";
+          //           if (hasValue == false) c0 = "DodgerBlue"
+          //           return i === 0 ?  c0  : i === 1 ? c1 : i === 2 ? c2 : "black";
 
-                    //return "red"
-              })
+          //           //return "red"
+          //     })
             
 
 
@@ -361,7 +437,7 @@ const BlockItem = ({id,  subIndex, grpIndex, handleMouseOver, handleMouseClick, 
         onMouseLeave={()  => handleMouseOut(id)}
       />
 
-      <line
+    {/*  <line
         key={id+1000}
         x1={0}
         y1={blockH+20}
@@ -371,7 +447,7 @@ const BlockItem = ({id,  subIndex, grpIndex, handleMouseOver, handleMouseClick, 
         stroke={"black"}
         strokeWidth={10}
         />
-
+*/}
 
 
      </g>

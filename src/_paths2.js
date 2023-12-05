@@ -3,8 +3,8 @@ import * as d3 from 'd3';
 import { select } from 'd3-selection';
 
 let blockH = 20; 
-let delay = 1000; // 3000; 
-let duration = 2000;
+let delay = 500; // 3000; 
+let duration = 1300;
 
 const Paths = ({ data, index, handlePathRoll, handleRollOut}) => {
   let svgRef = useRef(null);
@@ -171,6 +171,8 @@ const Paths = ({ data, index, handlePathRoll, handleRollOut}) => {
     let linkGen = d3.linkVertical();
    // links.sort((a, b) => b.pathType - a.pathType);// TRY and sort to be stacked in order. 
 
+
+
      d3.select(svgRef.current)
           .selectAll('.path')
           .data(links)  
@@ -187,12 +189,20 @@ const Paths = ({ data, index, handlePathRoll, handleRollOut}) => {
           }) //d => d.count*10)
           .attr('stroke', (d, i) => { 
             //return d.pathType=== 0 ?  "OrangeRed"  : d.pathType === 1 ? "PowderBlue" : d.pathType === 2 ? "lightgray" : 'gray' ;
+            // get the distance between sourceLoc[1] and targetLoc[1] -- // 
+            //let verticalDist = d.targetLoc[1] - d.sourceLoc[1];
 
+            // path 0 = orange / dark blue 
+            // path 1 = light blue 
+            // path 2 = grey 
+
+
+            //console.log ('path data = ', d)
             return d.pathType === 0
                             ? d.mainFlow === true
                               ? "OrangeRed"
                             : d.mainFlow === false
-                              ? "DodgerBlue"
+                              ? "Gray"
                               : "Black"
                   : d.pathType === 1 ? "PowderBlue"
                   : d.pathType === 2 ? "lightgray" : "gray";
@@ -200,13 +210,20 @@ const Paths = ({ data, index, handlePathRoll, handleRollOut}) => {
           })
           .attr('opacity', (d, i) => { 
 
+            //console.log ('path vertical height ', d.target[1] - d.source[1])
+            let verticalDist = d.target[1] - d.source[1];
+
+            let mainFlowAlpha1 =  verticalDist <=100 ? 0.0 : 0.7
+            let mainFlowAlpha2 = verticalDist <=100 ? 0.0 : 0.3
+            let secondFlowAlpha = verticalDist <=100 ? 0.0 : 0.4
+
             return d.pathType === 0
                             ? d.mainFlow === true
-                              ? 0.7
+                              ? mainFlowAlpha1
                             : d.mainFlow === false
-                              ? 0.3
-                              : 0.3
-                  : d.pathType === 1 ? 0.4
+                              ? mainFlowAlpha2
+                              : undefined
+                  : d.pathType === 1 ? secondFlowAlpha
                   : d.pathType === 2 ? 0.0 : 0.0;
 
             //return d.pathType=== 0 ?  0.6  : d.pathType === 1 ? 0.4 : d.pathType === 2 ? 0.2 : 0.2 ;
@@ -226,7 +243,9 @@ const Paths = ({ data, index, handlePathRoll, handleRollOut}) => {
         return (
             <path 
               key={i}
-              d = {`M -10, ${d.source[1]}, 20, ${d.source[1]}, -30, ${d.target[1]}, -140, ${d.target[1]}`}
+              //d = {`M -10, ${d.source[1]}, 20, ${d.source[1]}, -30, ${d.target[1]}, -140, ${d.target[1]}`}
+              // d = {`M -1000, ${d.source[1]}, -1000, ${d.source[1]}, -1000, ${d.target[1]}, -1000, ${d.target[1]}`}
+
               fill = "none"
               stroke ="lightgray"
               className="path"

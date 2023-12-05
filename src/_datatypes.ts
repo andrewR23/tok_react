@@ -2,7 +2,7 @@ import netClustering from 'netclustering';
 import makersJSON from './assets/allmakers_dates.json';
 
 // -- query string : to construct flows -- // 
-const queryString = 'towns==&advertised_instruments='; // 'towns=Chigwell&guilds=Clockmakers'; // 'towns=London&date>1800';
+const queryString = 'towns='; // 'towns=Chigwell&guilds=Clockmakers'; // 'towns=London&date>1800';
 
 // known_instruments advertised_instruments , towns, guilds 
 
