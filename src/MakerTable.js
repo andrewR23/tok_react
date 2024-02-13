@@ -15,7 +15,6 @@ const MakerTable = ({flowselected}) => {
 
 
     useEffect(() => { 
-      //console.log ("draw maker table")
       flowRef.current = flowselected[0]
       selectedRef.current = flowselected[1]
       filter( )
@@ -26,7 +25,8 @@ const MakerTable = ({flowselected}) => {
     }, [ ])
 
     useEffect(() => {       
-      //console.log ("update maker table")
+      //console.log ("update maker table", flowselected)
+      //console.log ("maker table ", flowselected);
 
      flowRef.current = flowselected[0]
      selectedRef.current = flowselected[1]
@@ -63,12 +63,12 @@ const MakerTable = ({flowselected}) => {
           </TableRow>
         ))}
 
-        {selectedRef.current.map((row) => (
+        {/*{selectedRef.current.map((row) => (
           <TableRow key={row.id}className="selectedRow">
               <TableCell className="id_col table_cell">{row.id}</TableCell>            
               <TableCell className="table_cell">{row.name}</TableCell>
          </TableRow>
-         ))}
+         ))}*/}
 
   
       </TableBody>

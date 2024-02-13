@@ -1,26 +1,29 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { select } from 'd3-selection';
+
 // import * as  Vec2D from 'victor';
 // import * as f from './functions.js';
+
+// material icons -- 
 import { Tooltip, Typography } from '@mui/material';
-// import {AddIcon} from '@material-ui/icons/Add';
-// import AddIcon from '@mui/icons-material/Add';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 
 
-let blockH = 40; 
-let delay = 500; 
-let duration = 1500
+let blockH = 60; 
+let delay = 500 * 1; 
+let duration = 1500 * 1; 
 
 
-const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBarData, handleBlockSelection, handleBlockRoll, handleRollOut,
-                        removeRow, handleUIClick}) => {
+const BlockGroup = ({ data, ypos, prevY, index, widths, rowinfo, rowSelection, handleBarData, handleBlockSelection, handleBlockRoll, handleRollOut,
+                         handleUIClick, handleBarDataV2}) => {
   let svgRef = useRef(null);
 
   
   let locs = useRef ([ ]); // xy loc of blocks (base)
   let subLocs = useRef ( [ ]);
   //let widthsRef = useRef ([ ])
+  let rowTextItems = useRef ([])
 
 
   const [locsState, setLocsState] =  useState([ ]); 
@@ -28,20 +31,38 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBa
   // -- perhaps move this one level up -- 
   //const [widthState, setWidths] = useState([])
 
+  const [yPos, setYpos] = useState(ypos)
+  const [yPosPrev, setYposPrev] = useState(prevY)
+
 
   useEffect(() => {   
       //console.log ("block data = ", data)
       //console.log ('row info =', rowinfo)
+      //console.log ("widths = ", widths)
       //console.log ('row selection = ', rowSelection); // row selection is more important...
 
-      drawBlocks( );
+      rowTextItems.current = rowinfo.values.split(' '); 
+      //console.log ("items", rowTextItems.current)
+
+
+
+      drawBlocks( ); // calc spacing...
       handleBarData(locs.current, subLocs.current, data, index, [...widths], rowSelection) 
+
+      // -- when data is updated the bar is update
+      //handleBarDataV2( ) 
   }, [data])
 
 
   useEffect( () =>{
+      //handleBarDataV2( ) 
+      setYpos (ypos)
+      setYposPrev (prevY)
 
-  }, [ ])
+      drawBlocks( ); // calc spacing...
+
+      //console.log ("rowInfo  ", rowinfo)
+  }, [ypos])
 
 
 
@@ -112,6 +133,17 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBa
 
 
       // -- draw the BLOCK Tet)  inside the GROUP -- // 
+
+       // d3.select(svgRef.current)
+       //    .selectAll('.blockTextBackground')
+       //    .attr('class', 'blockTextBackground')
+       //    .transition()
+       //    .delay(delay)
+       //    .duration(duration) // (2000)
+       //    .attr('x', 0)
+       //    .attr('y', ypos + 10 *2) // ypos+blockH*.8)
+       //    .attr('fill', 'blue')
+
       d3.select(svgRef.current)
           .selectAll('.blockText')
           .attr('class', 'blockText')
@@ -119,20 +151,37 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBa
           .delay(delay)
           .duration(duration) // (2000)
           .attr('x', 0)
-          .attr('y', ypos+blockH*.8)
-          .attr('fill', 'gray')
+          .attr('y', ypos + blockH*1.7) // (ypos+blockH *2)-20) // ypos+blockH*.8)
+          .attr('fill', 'black')
 
 
-
-    d3.select(svgRef.current)
-          .selectAll('.blockTextSelections')
-          .attr('class', 'blockTextSelections')
+     d3.select(svgRef.current)
+          .selectAll('.groupTextSelection')
+          .attr('class', 'groupTextSelection')
           .transition()
           .delay(delay)
           .duration(duration) // (2000)
-          .attr('x', 10)
-          .attr('y', ypos-7)
-          .attr('fill', 'gray')
+          .attr('transform', (d, i)=> { 
+            return `translate(${100}, ${ypos-7}) rotate(-30)`
+          })
+
+
+
+    // d3.select(svgRef.current)
+    //       .selectAll('.blockTextSelections')
+    //       .attr('class', 'blockTextSelections')
+    //       .transition()
+    //       .delay(delay)
+    //       .duration(duration) // (2000)
+    //       .attr('x', 0) // x y is set by the group.
+    //       .attr('y', 0) //+blockH*1.5)
+    //       .attr('fill', 'black')
+    //       .attr('opacity', (d, i)=> { 
+    //         let yDiff =  ypos - prevY; 
+    //         let alpha = yDiff < 200 ? 0 : 1 
+    //         return alpha
+    //       })
+
 
 
         d3.select(svgRef.current)
@@ -154,6 +203,16 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBa
           .attr('cy', ypos+blockH/2 )
 
 
+        d3.select(svgRef.current)
+          .selectAll('.buttonRemove')
+          .attr('class', 'buttonRemove')
+          .transition()
+          .delay(delay)
+          .duration(duration) // (2000)
+          .attr('x',-60) //2500+800+0)
+          .attr('y', ypos)
+
+
   }
 
 
@@ -173,47 +232,104 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBa
   return (
     <g ref={svgRef}>
 
+     {/*  <rect
+        className="blockTextBackground"
+        x = {0}  
+        y = {40} 
+        width= {200}
+        height={100}
+        fill= 'red'
+      />
+*/}
       <text 
         x = {-1000}  
         y = {-10} 
         className="blockText"
-        fontSize= {"36px"} 
-        textAnchor={"end"}>
+        // style={{ fontFamily: 'Arial', fontSize: '144px', fontWeight: 'bold', fill: 'red'}}
+        textAnchor={"start"}
+        fill='black'
+        >
         {rowinfo.title.toUpperCase( )}
       </text>
 
-      <text 
-        x = {-1000}  
-        y = {-10} 
-        className="blockTextSelections"
-        fontSize= {"36px"} 
-        >
-        {rowinfo.values.toUpperCase( )}
-      </text>
 
-      <circle
+{/*
+        {rowTextItems.current.map((d, i) => {
+
+          return (
+            <g transform={'translate(0, 0) rotate(0)'} className='rowTextGrp' key={i}>
+
+                <text 
+                  x = {230}  
+                  y = {100} 
+                  className="rowTextItem"
+                  fontSize= {"36px"} 
+                  >
+                  {"some text"}
+                </text>
+                <rect
+                  key={i}
+                  x={0}
+                  y={100}
+                  width={60}
+                  height={20}
+                  fill={'blue'}
+                />
+            </g>
+          );
+        })}*/}
+
+
+      {/*THIS WAS THE SELECTED TEXT */}
+      
+      {/*     
+        <g transform={'translate(0, 0) rotate(0)'} className='groupTextSelection'>
+        <text 
+          x = {-1000}  
+          y = {-10} 
+          className="blockTextSelections"
+          fontSize= {"36px"} 
+          >
+          {rowinfo.values.toUpperCase( )}
+        </text>
+        </g>
+      */}
+
+     
+        {/* UI ELEMENTS (removed) */}
+        {/* <circle
         cx ={-1000}
         cy = {0}
         r ={blockH/2}
         // height = {blockH}
         className="buttonExpand"
-        fill = {"gray"}
-        onClick={(event) => handleUIClick( 'buttonExpand', index, rowSelection)}
-
+        fill = {"darkgray"}
+        onClick={(event) => handleUIClick( 'buttonExpand', index, rowSelection)} // buttonExpand 
         />
 
         <circle
-        cx ={-1000}
-        cy = {0}
-        r ={blockH/2}
-        // height = {blockH}
-        className="buttonHide"
-        fill = {"darkgray"}
-        //onClick={() => clickRect( )}
-        onClick={(event) => handleUIClick('buttonHide', index, rowSelection)}
+          cx ={-1000}
+          cy = {0}
+          r ={blockH/2}
+          // height = {blockH}
+          className="buttonHide"
+          fill = {"gray"}
+          //onClick={() => clickRect( )}
+          onClick={(event) => handleUIClick('buttonHide', index, rowSelection)} // buttonHide
+        />*/}
 
-
-        />
+        {/* the 'remove' box */}
+        {/* <rect
+          x ={-1000}
+          y = {0}
+          width ={blockH}
+          height = {blockH}
+          // height = {blockH}
+          className="buttonRemove"
+          fill = {"dimGray"}
+          //onClick={() => clickRect( )}
+          onClick={(event) => handleUIClick('buttonRemove', index, rowSelection)} // buttonHide
+        />*/}
 
 
       {data.map((d, i) => {
@@ -238,7 +354,8 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBa
               key={i}
               id={i}
               index={index}
-              ypos={ypos}
+              yPos={yPos}
+              yPosPrev={yPosPrev}
               nodes={d.nodes}
               nodes_sorted={d.nodes_sorted}
               blockVal={d.value}
@@ -250,6 +367,8 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBa
               handleRollOut={handleRollOut}
           />
 
+
+
         );
       })}
 
@@ -258,7 +377,7 @@ const BlockGroup = ({ data, ypos, index, widths, rowinfo, rowSelection, handleBa
 };
 
 
-const BlockItemLarge = ({id, index, ypos, nodes, nodes_sorted, sub_widths, blockVal, rowValues,
+const BlockItemLarge = ({id, index, yPos, yPosPrev, nodes, nodes_sorted, sub_widths, blockVal, rowValues,
           handleSubBlocks, handleBlockSelection, handleBlockRoll, handleRollOut} ) => {
   let groupRef = useRef(null);
   let sublocs = useRef ([ ]); // xy loc of blocks (base)
@@ -269,15 +388,23 @@ const BlockItemLarge = ({id, index, ypos, nodes, nodes_sorted, sub_widths, block
       // ---------- // 
 
       useEffect( () => { 
-        //console.log ('sub_widths  = ', sub_widths)
-        //console.log ("row values: ", rowValues); // a string of user selected items in row ... // 
-       // console.log ("block val ", blockVal); // the 'type' value (e.g. 'microscope' or 'London')
+        //console.log ("blockVal = ", blockVal)
+        //console.log ("rowValues = ", rowValues)
+       // console.log ('nodes sorted ', nodes_sorted, 'nodes,', nodes, '  id ', id)
+        // console.log ('sub_widths  = ', sub_widths)
+        // console.log ("row values: ", rowValues); // a string of user selected items in row ... // 
+        // console.log ("block val ", blockVal); // the 'type' value (e.g. 'microscope' or 'London')
         drawBlockItems( );
-
         // send sub-block values - do this with wid values
         handleSubBlocks(sublocs.current, id)
       
       },[nodes_sorted])
+
+      useEffect( () => { 
+          //console.log ("UPDATE Y // PREV Y")
+          drawBlockItems( );
+
+      },[yPosPrev, yPos])
 
 
       // function calcWidth (item ) { 
@@ -335,6 +462,37 @@ const BlockItemLarge = ({id, index, ypos, nodes, nodes_sorted, sub_widths, block
               .attr('opacity', 0.8)
 
 
+          // -- draw the text on the section 
+          d3.select(groupRef.current)
+              .selectAll('.sectionTextGrp')
+              .attr('class', 'sectionTextGrp')
+              .transition( )
+              .delay(delay)
+              .duration(duration)
+              .attr ('transform', (d, i) =>{ 
+                   return `translate(${-10}, ${-10}) rotate(${-90})`;
+              })
+              .attr ('fill', (d, i) => { 
+                  //console.log ('vals ', blockVal, ' ', rowValues
+                  if (nodes.length == 0) return 'white'
+                  if (rowValues.includes(blockVal)) return 'black'
+                  return 'gray'                  
+              })
+              .attr('opacity', (d, i)=> { 
+                  if (nodes.length == 0) return 0
+                  
+                  // -- HIDE when rows are close -- 
+                  //  let baseAlpha =0.8;
+                  // if (!rowValues.includes(blockVal)) baseAlpha = 0.0
+                  // let yDiff =  yPos - yPosPrev; 
+                  // let alpha = yDiff < 200 ? 0 : baseAlpha
+
+                  // -- NO HIDE -- // 
+                  let alpha = 1; 
+                  if (!rowValues.includes(blockVal)) alpha = 0.0
+                  return alpha
+              })
+
           // d3.select(groupRef.current)
           //     .selectAll('.blockitemLine')
           //     .data(nodes_sorted)  
@@ -360,8 +518,6 @@ const BlockItemLarge = ({id, index, ypos, nodes, nodes_sorted, sub_widths, block
           //     })
             
 
-
-
       }
 
       // set the position of the sub items - the block items -- // 
@@ -369,7 +525,7 @@ const BlockItemLarge = ({id, index, ypos, nodes, nodes_sorted, sub_widths, block
       const handleMouseOver = (grp, sub, event) => {
          //console.log ("bar index = ", index )
          //console.log ("group index = ", grp)
-         console.log ("mouse over bar");
+         //console.log ("mouse over bar");
          handleBlockRoll( index, grp, sub, event);
 
       };
@@ -390,28 +546,42 @@ const BlockItemLarge = ({id, index, ypos, nodes, nodes_sorted, sub_widths, block
 
   // --------- // 
   return (
-      // -- a block group -- 
-    <g transform={`translate(${0}, ${0})`} ref={groupRef} className="blockGroupLrg">
-      <rect
-        key={id}
-        x={0}
-        y={0}
-        width={0} 
-        height={blockH}
-        fill="gray"
-        className="blockLrg"
-        onMouseOver={() => handleMouseOver(id)}
+      // -- a block group -- the entire block / section -- 
+    <g>
+      <g transform={`translate(${0}, ${0})`} ref={groupRef} className="blockGroupLrg">
+        <rect
+          key={id}
+          x={0}
+          y={0}
+          width={0} 
+          height={blockH}
+          fill="gray"
+          className="blockLrg"
+          onMouseOver={() => handleMouseOver(id)}
 
-      />
+        />
+
+        {/* text items for each of the sections */}
+        <g transform={`translate(${-2000}, ${0}) rotate(${0})`} className='sectionTextGrp'>
+          <text 
+            x = {0}  
+            y = {0} 
+            className="sectionText"
+            fontSize= {"38px"} 
+            >
+            {blockVal}
+          </text>
+        </g>
 
 
 
-      { nodes_sorted.map ((d, i) => {
-            //console.log ('id = ', id)
-            let n = parseFloat(`${id}${i}`)
-            return <BlockItem key={n} id={n} grpIndex={id} subIndex={i} handleMouseOver={handleMouseOver}  
-                                      handleMouseClick={handleMouseClick} handleMouseOut={handleMouseOut} />
-        }) }
+        { nodes_sorted.map ((d, i) => {
+              //console.log ('id = ', id)
+              let n = parseFloat(`${id}${i}`)
+              return <BlockItem key={n} id={n} grpIndex={id} subIndex={i} handleMouseOver={handleMouseOver}  
+                                        handleMouseClick={handleMouseClick} handleMouseOut={handleMouseOut} />
+          }) }
+      </g>
     </g>
     );
 };
@@ -432,10 +602,20 @@ const BlockItem = ({id,  subIndex, grpIndex, handleMouseOver, handleMouseClick, 
         height={blockH}
         fill="red"
         className="blockitem"
-        onClick={() => handleMouseClick(grpIndex, subIndex)}
-        onMouseOver={(event) => handleMouseOver(grpIndex, subIndex, event)}
-        onMouseLeave={()  => handleMouseOut(id)}
+        onClick={() => {
+              handleMouseClick(grpIndex, subIndex)
+          }}
+        onMouseOver={(event) => {
+              event.target.style.cursor = 'pointer';
+              handleMouseOver(grpIndex, subIndex, event)
+          }}
+        onMouseLeave={()  => {
+              event.target.style.cursor = 'default';
+              handleMouseOut(id)
+        }}
       />
+
+
 
     {/*  <line
         key={id+1000}

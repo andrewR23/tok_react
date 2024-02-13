@@ -79,11 +79,14 @@ export interface RowType {
     yspacing: number;
 }
 
+// 1000 -- 1200
 
+const allmakers = makersJSON.makers.slice (0, 1000); // get a subset to test 
 
-const allmakers = makersJSON.makers.slice (0,1000); // get a subset to test 
+//console.log ("all makers", allmakers)
 
 // get all the makers and and filter (remove if they have missing targets)
+//const linkTypes = [ ];
 const linkTypes = [
       "see_also",
       "associated_with",
@@ -118,10 +121,83 @@ const linkTypes = [
       "subcontractor_to",
       "fellow_apprentice_of",
       "supplied_to",
-      "_creditor_of"] ; // a list of link types -- // 
+      "_creditor_of"
+    ] ; // a list of link types -- // 
 
-let base_makers: MakerType[] = [ ]; // perhaps this where we set the type.. 
-let base_links: LinkType[] = [ ]; // does this need a type 
+
+// -- link types in groups -- // 
+let linkTypes_grouped = {
+
+      family: [
+          "child_of",
+          "sibling_of",
+          "spouse_of",
+          "parent_of",
+          "nephneice_of",
+          "unknown_relation",
+          "cousin_of",
+          "uncaunt_of",
+          "grandchild_of",
+          "son-in-law_of",
+          "stepchild_of",
+          "step-parent_of",
+          "father-in-law_of",
+          "brother-in-law_of"
+      ],
+
+      business: [
+          "succeeded_by",
+          "took_over_from",
+          "owned_by",
+          "owner_of",
+          "partnership"
+      ],
+
+      location: [
+          "same_premises_as" 
+      ],
+
+      employment: [
+          "employed_by",
+          "worked_for"
+      ],
+
+     guild: [
+          "apprenticed_to",
+          "had_apprentice"
+      ],
+
+      agent: [
+          "agent_to",
+          "supplied_to",
+          "supplied_to",
+          "supplied_by"
+      ],
+
+      subcontract: [
+        "subcontractor_to"
+      ],
+
+      personal: [
+         "fellow_apprentice_of",
+          "friend_of"
+      ],
+
+      financial: [
+          "_creditor_of"
+      ],
+
+      undefined: [
+        "see_also",
+        "associated_with"
+      ]
+
+}
+
+
+
+let base_makers: MakerType[] = [ ]; 
+let base_links:  LinkType[]  = [ ];
 
 // -- filter & convert all makers into base_makers // 
 allmakers.forEach (m => { 
@@ -210,60 +286,93 @@ let social_Clusters: ClusterType[] = sortByLinks ([...base_makers], base_links);
 // --SORT into SOCIAL CLUSTERS -- using net clustering -- // 
 function sortByLinks (n_list: MakerType[],  socialLinks: LinkType[]) {
         // -- netclustering test -- // 
+        //console.log ("node links = ", socialLinks)
+        //console.log ("node makers = ", n_list)
+
         // -- format links into a format that can be used 
         // -- map down to just ids -- // 
         let linksnew = socialLinks.map (item =>  { 
             // --- //
+            //console.log ('item ', item)
             let sourcenode =  n_list.find (n => n.id == item.source); 
             let targetnode =  n_list.find (n => n.id == item.target);
 
-            //console.log ('source node ', sourcenode)
+           // console.log ('source node ', sourcenode, ' target node', targetnode)
 
             if (sourcenode && targetnode) { 
                 let sourceIndex = n_list.indexOf (sourcenode);
                 let targetIndex = n_list.indexOf (targetnode);
-                return { source: sourceIndex, target: targetIndex}
                 //console.log ('source ', sourceIndex, ' target : ', targetIndex)
+                return { source: sourceIndex, target: targetIndex}
+
             } else {
-                return undefined as any; // Use 'any' type to accommodate undefined
+               return undefined as any; // Use 'any' type to accommodate undefined
             }
 
             //return { source: sourceIndex, target: targetIndex}
-        }).filter(link => link !== undefined); // Filter out undefined elements
+        })//.filter(link => link !== undefined); // Filter out undefined elements
 
-       // -- unformatted list of links -- // 
-       //console.log ("linksnew : ", linksnew)
+
+        const linkIDs = [...new Set(linksnew.flatMap(link => [link.source, link.target]))];
+        //console.log ("linksnew : ", linksnew)
+        //console.log ("linkIDs = ", linkIDs)
+
+
+
        let clustersNEW : ClusterType[ ]= [ ];
        let clustertest: string[][] = netClustering.cluster(n_list, linksnew); // this give each node a new cluster property.. 
+       let clusterTEMP: any = [ ]; // emppy array to populate
 
-        // -- FLATTEN any arrays that are returned -- //
+
        clustertest.forEach ((c, i) => { 
            // flatten and sub arrays 
            if (Array.isArray (c[0])) { 
               clustertest[i] = clustertest[i].flat ( )
-           }
-           // console.log ('cluster test flat = ', c)
-           // -- non linked items - need to be sorted into their OWN clusters -- 
-           let nodeindex = c[0];// first node in the cluster (as a test)
-           let clusternode = n_list[parseFloat(nodeindex)];
+           } 
 
-          // --  if this not in a link - make all items separate clusters 
-          // console.log ('social links -> ', socialLinks)
-          if (clusternode != undefined) { 
-            let foundLink = socialLinks.find (l => l.source == clusternode.id || l.target == clusternode.id)
 
-            // -- if not in a link 
-            if (foundLink == undefined ) { 
-                let cspliced: any = clustertest.splice (i, 1)
-                splitIntoChunk (c, 1, clustertest)
-            } 
+          // FIND clusters which have items NOT in link list (ie.. contain unlinked items)
+          let filter_included = clustertest[i].filter (d => linkIDs.includes(parseFloat(d)))
+          let filter_notincluded = clustertest[i].filter (d => !linkIDs.includes(parseFloat(d)))
 
+          // -- A cluster which is ALL linked items (add to list): PUSH
+            if (filter_included.length>0 && filter_notincluded.length==0) clusterTEMP.push (filter_included);
+
+          //  -- A cluster with many UNlinked items : BUT may still contains SOME linked items... 
+          // -- NEEDS to be sorted
+          if (filter_notincluded.length > 0) { 
+
+            // SPLIT and ADD all the NON-LINKED items
+            splitIntoChunk (filter_notincluded, 1, clusterTEMP)
+        
+            
+            // FIND sub links inside the clusters 
+            const sublinksnew = linksnew.filter((link) => {
+                return filter_included.includes(String(link.source)) || filter_included.includes(String(link.target));
+            });
+            //console.log ("sublinks ", sublinksnew)
+            // ADD as NEW clusters
+            let subcluster: string[][] = netClustering.cluster(n_list, sublinksnew);
+            
+            // push ALL subclusters (EXCEPT the final one which will be ALL REMAINING () nodes)
+            for (let i=0; i<subcluster.length-1; i++) { 
+                clusterTEMP.push (subcluster[i])
+            }
+
+         
           }
 
         })
 
+       //console.log ("cluster copy ", clusterTEMP)
+       //console.log ('cluster test after chunk ', clustertest)
+
+       clustertest = [ ]
+       clustertest= clusterTEMP
         // ---------------------------- // 
         // -- also get list of links -- // 
+    
+
         clustertest.forEach ((cluster:(string[]) , i) => { 
                 // -- format into clusters with node IDs -- 
                 let nodeIds : MakerType[] = []; 
@@ -372,15 +481,13 @@ function sortByLinks (n_list: MakerType[],  socialLinks: LinkType[]) {
 
         });
 
-        //n_list.forEach ( n => n.cluster = 'cluster_' + n.cluster) // update the 'cluster' property (is this needed)
         return clustersNEW;
 
         // -- chunk array function  into sub array -- // 
         function splitIntoChunk(arr: string[], chunk: number, arrayToAddTo: string[][]) {
             for (let i=0; i < arr.length; i += chunk) {
                 let tempArray = arr.slice(i, i + chunk);
-                //console.log(tempArray);
-                arrayToAddTo.push (tempArray)
+                arrayToAddTo.push (tempArray) ; // add back into cluster test. 
             }
         }
 
@@ -463,6 +570,38 @@ export function addRow (rowdata: any, att: any) {
 
     return rowdata
 
+}
+
+
+export function removeRow (rowData: any, att: any, id: any  ) { 
+    console.log ('remove row AT: ', att, ' ', id); // row number to remove 
+    
+    // -- splice test -- // 
+    // let wordlist = ["blow", "this", "for", "a", "lark"];
+    // wordlist.splice (id, 1);
+    // console.log ("worddatasliced = ", wordlist)
+
+
+    // -- v1 remove rows (last item)-- //
+    //let temprows = [...rowData].slice(0, -1);
+
+    // -- v2 remove (from anywhere) -- // 
+    let temprows = [...rowData]
+    temprows.splice (id, 1)
+
+    temprows.forEach ((row, i) => { 
+        console.log ("new row = ", row)
+        row.id =i;
+
+    })
+
+    // -- update the id data in temp rows -- // 
+    console.log ("temp rows ::::::", temprows)
+
+
+
+    //rowData = temprows
+    return temprows; 
 }
 
 //sortRows(rowsDataset);
@@ -598,6 +737,8 @@ export function sortRows (rowdata: any[] ) {
 export {base_makers}  // base set of makers 
 export {social_Clusters}
 export {rowsDataset} ;// sorted rows 
+export {linkTypes_grouped} ; // export  the group types 
+
 
 
 

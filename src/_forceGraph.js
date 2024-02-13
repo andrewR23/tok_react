@@ -4,19 +4,23 @@ import { select } from 'd3-selection';
 
 const dateScale = d3.scaleLinear(); //.domain([1500, 1950]).range([0, 900])
 
-let delay = 3000; 
-let duration = 4000;
+let delay = 1000; // 1000; 
+let duration = 1000; //  4000;
 
-let yHeight = 900; 
+let yHeight = 900; // the height of the date  
+
+import { linkTypes_grouped } from './_datatypes'
 
 
-const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLocations, handleNodeRoll, handleRollOut}) => {
+
+const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLocations, handleNodeRoll, handleNodeRollOut}) => {
       let svgRef = useRef(null);
       const dateScaleRef = useRef(d3.scaleLinear()); //.domain([1500, 1950]).range([0, 900]));
       const [animatedNodes, setAnimatedNodes] = useState([]); // this is the array of nodes to ref which gets updated 
 
       //const [visGrps, setVisGrps] = useState([]); 
       const [hozSpacing, setHozSpacing] = useState(0); 
+      const hoveredXY = useRef([null])
 
       const [grpLocs, setGrpLocs] =  useState([ ]); 
       let locs = useRef([])
@@ -27,32 +31,58 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
 
       const [scaleState, setScaleState] = useState ([1]);
 
+      let frameW = useRef(1600) // stage is 1000
+
+
+
+      const [hoveredId, setHoveredId] = useState(null); // get the id of the rolled item...
+
+      // useEffect (()=> { 
+      //   //console.log ("hovered id...", hoveredId)
+      // }, [hoveredId])
       
       useEffect(() => { 
-          // console.log ("drag Y = ", dragY)
-           drawTimeLine( )
+          // filter nodes 
+          //nodes = [ ]
+          drawTimeLine( )
+          //console.log ("updated nodes = ", nodes)
+          //console.log ('frame W = ', frameW.current)
+
+          // get the XY of the Hovered item -- //  
+          const hovereditem = d3.select(svgRef.current).selectAll('.largecircleGrp').filter((d, i) => i === hoveredId);
+          if (!hovereditem.empty()) {
+              let translateXY= hovereditem.attr('transform').match(/translate\(([^,]+),([^)]+)\)/);
+              let xpos = parseFloat (translateXY[1])
+              let ypos = parseFloat (translateXY[2])
+              hoveredXY.current = [xpos, ypos]
+              //console.log ('hovered item', hovereditem.attr('transform'))
+              //console.log ("xpos ypos =  ", hoveredXY.current )
+          }
+        
 
           setAnimatedNodes ([...nodes])
+
+          let visibleGrps  = nodes.filter (d => d.nodes.length> 0);
+          setHozSpacing (frameW.current/visibleGrps.length)
+          //console.log ("hoz spacing", hozSpacing)
+          //setVisGrps (visibleGrps)
+
+
+
           if (layout == "force")  forceMove();
           if (layout == "linear") linearMove( );
           if (layout == "grid") gridMove( );
 
           sortByDate(nodes)
 
-          let visibleGrps  = nodes.filter (d => d.nodes.length> 0);
-          //setVisGrps (visibleGrps)
-
-          //
-          let frameW = 2900; 
-          setHozSpacing (frameW/visibleGrps.length)
 
           // handle updated locs.. -- // 
           //handleLocations (grpItems)
-          drawGroup( )
+          drawGroupFrame( ) ; // ** 
          
 
 
-      }, [nodes, layout, flowselected, baseY])
+      }, [nodes, layout, flowselected, baseY, hoveredId])
 
 
       // ----// 
@@ -71,26 +101,22 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
 
       // ---- // 
       useEffect(() => { 
-          if (layout == "linear") linearMove( );
+         if (layout == "linear") linearMove( );
          //console.log ("hoz spacing  = ", hozSpacing);
       }, [hozSpacing])
 
 
-
       // ---- // 
       useEffect( ()=> { 
-          // show date range & use date range to set the height range 
-          console.log ('date range = ', daterange) 
+          //console.log ('date range = ', daterange) 
           dateScaleRef.current = d3.scaleLinear().domain([daterange[0], daterange[1]]).range([0, yHeight]);
 
       }, [daterange])
 
 
-      function handleSubLocs (locs, id) { 
+     function handleSubLocs (locs, id) { 
         subLocs.current[id] = locs; // -- add to array -- / 
       }
-
-
 
      function sortByDate (nodes) { 
         //console.log ('sort by date')
@@ -102,9 +128,8 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
       }
 
 
-      // -- draw  -- //
-
-      function drawGroup ( ) { 
+      // -- draw and position the enclosing frame - using baseY - -- //
+      function drawGroupFrame ( ) { 
         d3.select(svgRef.current)
           .transition()
           .delay(500)
@@ -114,8 +139,8 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
 
       }
 
-
       function forceMove  () {
+          //console.log ("begin force move ... ", nodes)
           let offsetX = 1100;
           // ------------- // 
           locs.current = [ ]; 
@@ -131,6 +156,7 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
               })
 
           // ----------------- // 
+          // calculate the end positions -- 
           for (let i=0; i<20; ++i) {
               simulation.tick( );
               setAnimatedNodes([...simulation.nodes()]);
@@ -159,7 +185,6 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
                   let y = d.y + height
                   //let y = Math.max(0, Math.min(500, d.y));
                   //console.log ("force POS ; ", i, ' ', [x, y])
-                  //console.log ('helloforce')
                   locs.current.push ([x, y])
 
                   return `translate(${x}, ${y}) scale(1)`
@@ -188,8 +213,11 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
       };
 
       function linearMove ( ) { 
-            let spacing = 10;
+            //let spacing = 10;
             let visCount = 0;// count the no. of nodes visible. 
+            //console.log ("linear move hoz spacing ", hozSpacing)
+            
+
             // -- set GROUP position
             locs.current = [ ];
             d3.select(svgRef.current)
@@ -200,17 +228,30 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
               .transition()
               .delay(delay)
               .duration(duration)
-              .attr ('transform', (d, i) => { 
-                  let x = visCount * hozSpacing + 50; //  - 550 
+              //.attr ('transform', (d, i) => { }) 
+
+              .attr('transform', function (d, i) {
+                  // -- set x pos
+                  let translateXY= this.getAttribute('transform').match(/translate\(([^,]+),([^)]+)\)/);
+                  let xpos = parseFloat (translateXY[1])
+                  let ypos = parseFloat (translateXY[2])
+
+                  let x = setXPos(visCount, hozSpacing, i, xpos); // visCount * hozSpacing + 50; //  - 550 
+                  
+                  // -- set y pos --  
                   let y =  d.nodes.length=== 0 ?  20000 : dateScaleRef.current (d.nodes[0].date_1); 
+                  
                   // increment vis count // 
                   if (d.nodes.length > 0)  visCount ++; 
                   //console.log ("linear POS ; ", i, ' ', [x, y])
-                  //console.log ('hellolinear')
                   locs.current.push ([x, y])
-                  // -- updte values here ?? 
                   return `translate(${x}, ${y}) scale(${1})`
-               }) 
+
+
+
+              })
+               
+             
               //.call(updateGroupLocs)
 
        
@@ -224,13 +265,37 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
               .duration(duration)
               .attr('r',  d => d.nodes.length * 5)
               //.attr('fill', 'green')
-              .attr('opacity', 0.15)
+              .attr('opacity', 0.1)
 
           // 
           //console.log ("linear locs ", locs)
 
           setGrpLocs (locs.current)
 
+
+      }
+
+      function setXPos (visCount, hozSpacing, i, xpos) { 
+        //console.log ("item = ", i, ' hoveredId ', hoveredId); 
+        //let newx = 0;
+        // get the xpos of the rolled item.. 
+
+        // -- if Nothing hovered -- 
+        if (hoveredId == null) return visCount * hozSpacing + 50; 
+
+        // -- if item hovered -- // s
+        if (i == hoveredId) return xpos; // if hovered- keep at current x pos -- // 
+        if (i != hoveredId)  { 
+            // if not hovered - recalculate.. 
+            // get the distance from i to this... 
+            let spacing = 160; 
+            let newx = (i - hoveredId) * spacing + hoveredXY.current[0]
+            return newx; 
+        }
+
+
+
+        //return visCount * hozSpacing + 50; 
 
       }
 
@@ -274,60 +339,33 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
 
       }
 
-
-        function drawTimeLine ( ) { 
-          let x = layout == 'linear'  ?  -100 :-200
-          let liney = layout == 'linear'  ?  0 :10000
-
-          d3.select(svgRef.current)
-            .selectAll('.timeline')
-             .transition()
-            .delay(0)
-            .duration(duration)
-            .attr('class', 'timeline')
-            .attr ('x', x)
-            .attr ('y', 0)
-            .attr ('fill', 'none')
+      function drawTimeLine ( ) { 
+          let x = layout ==     'linear'  ?  -100 :  -800
+          let liney = layout == 'linear'  ?  0    :  10000
 
 
           // draw date scale- ticks 
-            const yDates = d3.axisLeft(dateScaleRef.current)
+          const yDates = d3.axisLeft(dateScaleRef.current)
               .tickFormat(d3.format('d')) // Display years as integers
               .ticks(10); // Adjust the number of ticks as needed
 
           d3.select(svgRef.current)
-                .selectAll('.y-axis')
-                .data([null]) // Use a single-element array for a one-time creation
-                .join('g')
+                .selectAll('.timelineYAxis')
+                // .join('g')
                 .transition()
                 .delay(0)
                 .duration(duration)
-                .attr('class', 'y-axis')
-                .attr('transform', `translate(${x}, 0)`) // Adjust the horizontal position
-                .attr ('stroke', 'LightCyan')
+                .attr('class', 'timelineYAxis')
+                .attr('transform', `translate(${x}, 0) scale(${1})`) // Adjust the horizontal position //`translate(${0}, ${0}) scale(1)`
+                .attr ('stroke', 'none')
                 .attr ('fill', 'none')
                 .call(yDates)
                 .selectAll('text') // Select all text elements in the axis
-                .style('font-size', '20px'); // Adjust the font size as needed
+                .style('font-size', '20px') // Adjust the font size as needed
+                .attr('fill', 'gray')
+                .attr('stroke', 'none')
 
-           // -- add more lines 
-           d3.select(svgRef.current)
-                .selectAll('.borderline')
-                .transition()
-                .delay(0)
-                .duration(duration)
-                .attr('class', 'borderline')
-                .attr('opacity', 1)
-                .attr('x1', 20)
-                .attr('y1', liney)
-                .attr('x2', 2300)
-                .attr('y2', liney)
-                .attr('stroke-width', 1.5 )
-
-
-
-       
-              
+ 
 
         }
 
@@ -340,55 +378,73 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
             .attr('class', 'largecircle')
             // .attr('fill', 'pink')
             .attr('opacity', (d, i) => { 
-              return id === i ? 0.8 : 0.2;
+              return id === i ? 0.8 : 0.1;
             })
+
+          //--  fade small circle -- 
+          d3.select(svgRef.current)
+            .selectAll('.smallcircle')
+            .transition()
+            .duration(duration*.25)
+            .attr('class', 'smallcircle')
+            .attr('fill', 'red')
+            .attr('opacity', (d, i) => { 
+                return id === i ? 1 : 0.2;
+            })
+             .attr('fill', (d, i) => { 
+               //return id === i ? 'red' : 'blue';
+            })
+
+
+          
       }
 
+      // ---- //
       function changeScale (id) { 
 
-         // -- scale the whole group -- // 
-         d3.select(svgRef.current)
-              .transition( )
-              .duration(duration)
-              .attr('transform', function (d, i) { 
-                const translateGrp = `translate(${10}}, ${10}) scale(${.2})`;
-                return translateGrp
+        const scaleAmt = 1; 
+        const scaleAmtSmall = 0.3
 
-                })
-          //setScaleState (0.1)
-
-
-          // // -- scale rolled item item with selected ID -- //   
-          d3.select(svgRef.current)
+         // -- scale rolled item item with selected ID -- //   
+           d3.select(svgRef.current)
               .selectAll('.largecircleGrp')
               .attr('class', 'largecircleGrp')
               .transition()
               .duration(1000)
               .attr ('transform', function (d, i) { 
-                  let scale = id === i ? 3 : 0.9; 
+                  let scale = id === i ? scaleAmt : scaleAmtSmall; 
                   // Parse the current transform attribute to extract translate values
                   const tCurrent = this.getAttribute('transform')
                   const tMatch = /translate\(([^)]+)\)/.exec(tCurrent);
                   if (tMatch == null) return
-
                   const tVals = tMatch[1].split(',').map(parseFloat);
                   const tNew = `translate(${tVals[0]}, ${tVals[1]}) scale(${scale})`;
                   return tNew;
                   
-               }) 
+              }) 
+          // -- scale the timeline
+          // d3.select(svgRef.current)
+          //     .selectAll('.timelineYAxis')
+          //     .attr('class', 'timelineYAxis')
+          //     .transition()
+          //     .duration(1000)
+          //     .attr ('transform', function (d, i) { 
+          //         //let scale = scaleAmt; 
+          //         const tCurrent = this.getAttribute('transform')
+          //         const tMatch = /translate\(([^)]+)\)/.exec(tCurrent);
+          //         if (tMatch == null) return
+          //         const tVals = tMatch[1].split(',').map(parseFloat);
+
+          //         const tNew = `translate(${tVals[0]}, ${tVals[1]}) scale(${scaleAmt})`;
+          //         return tNew;
+                  
+          //     }) 
+
+
+
       }
 
-      const reset = ( ) => { 
-
-         // -- reset the whole group -- // 
-           // d3.select(svgRef.current) 
-           //      .transition( )
-           //      .duration(5000)
-           //      .attr('transform', function (d, i) { 
-           //        const translateGrp = `translate(${0}}, ${0}) scale(${1})`;
-           //        return translateGrp
-
-           //  })
+      const resetScale = ( ) => { 
 
           // -- reset circle scale -- 
           d3.select(svgRef.current)
@@ -406,34 +462,67 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
                   const tNew = `translate(${tVals[0]}, ${tVals[1]}) scale(${scale})`;
                   return tNew;
                   
-               })
+          })
 
-          // -- reset circle opacity -- 
-          d3.select(svgRef.current)
-            .selectAll('.largecircle')
-            .transition()
-            .duration(1000)
-            .attr('class', 'largecircle')
-            // .attr('fill', 'green')
-            .attr('opacity', 0.2)
 
+          // d3.select(svgRef.current)
+          //     .selectAll('.timelineYAxis')
+          //     .attr('class', 'timelineYAxis')
+          //     .transition()
+          //     .duration(1000)
+          //     .attr ('transform', function (d, i) { 
+          //         let scale =  1
+          //         const tCurrent = this.getAttribute('transform')
+          //         const tMatch = /translate\(([^)]+)\)/.exec(tCurrent);
+          //         if (tMatch == null) return
+          //         const tVals = tMatch[1].split(',').map(parseFloat);
+          //         const tNew = `translate(${tVals[0]}, ${tVals[1]}) scale(${scale})`;
+          //         return tNew;  
+          // })
 
       }
 
-
-
       // ---- //
-      const handleMouseOver = (id) => {
-        //changeFade(id)
-        //changeScale(id)
-        handleNodeRoll( );
-      };
+      const handleGroupRoll = (id, data) => { 
+         console.log ("group roll over. ", id, " : ", event.target.className.baseVal)
+         setHoveredId (id);
 
-      const handleMouseOut = (id) => {
-        //reset ( ); // opacity (1. scale 1)
-      };
+         // let dateFrom = data[0].date_1;
+         // let dateTo = data[data.length-1].date_1;
+         // //console.log ("date range = ", dateFrom, " : ", dateTo)
+
+         // // update date scale 
+         // dateScaleRef.current = d3.scaleLinear().domain([dateFrom-10, dateTo+10]).range([0, yHeight]);
+         // // ----- // 
+         // frameW.current = 50000
+         // // get the group start end dates ()
+         // //changeScale(id)
+         // //changeFade(id)
+
+      }
+
+      const handleGroupRollOut = (id) => { 
+         console.log ("group roll out. ", id, " : ", event.target.className)
+         setHoveredId(null)
+
+        // if roll out onto the main canvas 
+        // const relatedTargetID = event.relatedTarget.id;
+        // if (relatedTargetID == 'mainpage' || relatedTargetID == 'maincanvas') { 
+        //    //resetScale()
+        //    // reset date scale 
+        //   dateScaleRef.current = d3.scaleLinear().domain([daterange[0], daterange[1]]).range([0, yHeight]);
+
+        //   frameW.current = 2900
 
 
+        // }
+
+      }
+
+      const handleGroupClick = (id) => { 
+        // click on group 
+        console.log ('click on group')
+      }
 
 
       return (
@@ -442,20 +531,20 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
             id={0}
             className={'socialgroup'}
             transform={`translate(${0}, ${-1000}) scale(${scaleState})`} 
+            // onMouseOver={handleOnSVG}
             >
 
-          <line 
+
+         {/*top line */}
+{/*          <line 
             x1={0}
             y1={0}
             x2={2500}
             y2={0}
             stroke="darkGray"
             className={"borderline"}
-            strokeWidth={2}
-
-          />
-
-
+            strokeWidth={1}
+          />*/}
 
           <TimeLine
             key={0}
@@ -463,7 +552,7 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
           />
 
 
-          {/*{console.log("Current data:", nodes.map (d => d)) } visGroup OR nodes*/}
+          {/*{console.log("Current data:", nodes.map (d => d)) } */}
           {nodes.map((d, i) => {
             return (
               <CircleLarge
@@ -473,13 +562,15 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
                   flowselected = {flowselected}
                   links={d.links}
                   layout={layout}
-                  handleMouseOver={handleMouseOver}
-                  handleMouseOut ={handleMouseOut}
-                  handleSubLocs = {handleSubLocs}
+                  handleGroupRoll={handleGroupRoll}
+                  handleGroupRollOut={handleGroupRollOut}
+                  handleGroupClick={handleGroupClick}
                   handleNodeRoll ={handleNodeRoll}
-                  handleRollOut={handleRollOut}
+                  handleNodeRollOut={handleNodeRollOut}
                   dateScale = {dateScaleRef.current}
                   opacity={0.4}
+                  // hoverVal={hoveredId === i} // returns true or false... 
+                  hoverID = {hoveredId}
 
               />
 
@@ -492,18 +583,70 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
 
 // ------------------------ // 
 // this is like a cluster group which contains sub ndata
-const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMouseOver, handleMouseOut, handleSubLocs, handleNodeRoll, handleRollOut}) => {
+const CircleLarge = ({id, data, flowselected, links, layout, dateScale, hoverID,
+                      handleGroupRoll, handleGroupRollOut, handleGroupClick, handleNodeRoll, handleNodeRollOut}) => {
   let groupRef = useRef(null);
   const [animatedNodes, setAnimatedNodes] = useState([]); // this is the array of nodes to ref which gets updated 
   const [animatedLinks, setAnimatedLinks] = useState(links); // this is the array of nodes to ref which gets updated 
 
   // -- sub locs -- // 
-  let locs = useRef([ ]); 
+  let locs = useRef([ ]);
+  //let spread = useRef(false) 
   //let subLocs = useRef ([ ]); // xy loc of blocks (base)
+  
   let [subLocState, setSubLocState] = useState([])
+  let mappedLinks = useRef([ ])
+
+  // -- set colour scale from linkedgroups data 
+  let hoverVal = useRef (false)
+  const alpha = useRef(1)
+  const linkColorScale = useRef(
+      d3.scaleOrdinal()
+          .domain(Object.keys(linkTypes_grouped))
+          .range(['rgb(215,48,39)',
+                  'rgb(244,109,67)',
+                  'rgb(253,174,97)', 
+                  'rgb(254,224,144)',
+                  'rgb(255,255,191)',
+                  'rgb(224,243,248)',
+                  'rgb(171,217,233)',
+                  'rgb(116,173,209)',
+                  'rgb(69,117,180)'])
+      );
+  //console.log ('link colour scale ', linkColorScale.current.domain( ))
 
 
   useEffect(()=> {  
+      //console.log ('new hover value ', hoverVal)
+      // -- remap the links : create a data element for each TYPE in the link
+      // -- flattens the array of links -- // 
+      // -- returns an array of objects ({type, source, target})
+      mappedLinks.current = links.flatMap(d => d.type.map(type => (
+        { type, source: d.source, target: d.target })
+      ));
+
+
+      // set alpha from hoverID ()
+
+      if (hoverID == null) { 
+         hoverVal.current = false
+         alpha.current = 0.7; // default for all (nothing selected)
+
+      }
+
+      if (hoverID != null && hoverID == id) { 
+          hoverVal.current = true; 
+          alpha.current = 1;  // highlight selected
+      } 
+
+      if (hoverID != null && hoverID != id) { 
+          hoverVal.current = false
+          alpha.current = 0.2; // 
+
+      }
+
+
+
       // --- // 
       if (layout == "force") forceMoveSmall();
       //--- // 
@@ -511,16 +654,17 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
       if (layout == "grid") forceMoveSmall( );
       //--- // 
 
-      if (layout == "linear") linearMoveSmall( );
+       if (layout == "linear") linearMoveSmall( );
       //--- //
 
-      //handleSubLocs (subLocState, id );//
 
-  },[data, layout, flowselected])
+  },[data, layout, flowselected, links, hoverID])
 
   useEffect (() => { 
-     // send the updated values -- //
-      handleSubLocs (subLocState, id );//
+      // send the updated values -- //
+      // log updated values -- // 
+      // console.log ('current locs = ', subLocState)
+      //handleSubLocs (subLocState, id );//
   }, [subLocState])
 
 
@@ -537,25 +681,16 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
           .force("link", d3.forceLink(links))
           .stop( )
 
-    // add link forces and draw links.. 
-
+      // -- add link forces and draw links.. 
       for (let i = 0; i < 40; ++i) {
             simulation.tick();
             setAnimatedNodes([...simulation.nodes()]);
-            //setAnimatedLinks([...simulation.links( )])
-            const updatedLinks = links.map(link => ({
-                  source: { x: link.source.x, y: link.source.y },
-                  target: { x: link.target.x, y: link.target.y }
-            }));
-            //const linkForce = simulation.force("link");
-            //const linksnew = linkForce.links( );
-            //setAnimatedLinks([...linksnew]);
-            // -- END --- // 
       } 
 
       locs.current = [ ];
+
       // -- small circle 
-      let selection = d3.select(groupRef.current)
+      let circles = d3.select(groupRef.current)
           .selectAll('.smallcircle')
           .data(data)  
           .attr('class', 'smallcircle')
@@ -563,24 +698,20 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
           //.delay(3000)
           .duration(3000)
           .attr('cx', ((d, i) => {
-            //console.log ("force xy ", d.x, ': ',  d.y)
             locs.current.push ({id: d.id, loc: [d.x, d.y]}); 
             return d.x }))
           .attr('cy', ((d, i) => {
             return d.y }))
           .attr('r', circleSmallSize)
           .attr('fill', circleSmallFill)
-          //.call (updateSubLocs)
+          .attr('opacity', alpha.current)
 
-      //updateSubLocs (selection)
-      //console.log ('locs', locs)
       setSubLocState(locs.current)
 
-
-      // // -- draw lines.. 
-       d3.select(groupRef.current)
+      // -- draw lines links 
+      let lines = d3.select(groupRef.current)
           .selectAll('.linksmall')
-          .data(links)  
+          .data(mappedLinks.current)
           .attr('class', 'linksmall')
           .transition()
           //.delay(3000)
@@ -589,11 +720,21 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
           .attr('y1', (d => d.source.y))
           .attr('x2', (d => d.target.x))
           .attr('y2', (d => d.target.y))
+          .attr('stroke', d => { 
+            //console.log ("d type = ", d.type); // use type for colour.. 
+            let col = 'black';
+            let linkType = Object.entries(linkTypes_grouped).find(([group, types]) => types.includes(d.type))?.[0];
+            if (linkType) {
+               col = linkColorScale.current(linkType);
+            }
+            return col;
+          })
+          .attr('opacity', alpha.current)
 
 
-      simulation.alpha(0.1).restart();
 
-      return simulation.stop(); // clean up function
+       simulation.alpha(0.1).restart();
+       return simulation.stop(); // clean up function
 
   };
 
@@ -601,62 +742,95 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
   function linearMoveSmall ( ) { 
         locs.current = [ ] ;
         let linespace = 0;
-        let rootY = 0;
-        if (data.length>0) rootY = dateScale(data[0].date_1)
-        //console.log ("root Ypos  = ", rootY);
-        // -- console.log -- //
-        let selection = d3.select(groupRef.current)
+        let rootY = 0; // the 'top item' //
+        // --- // 
+        let offset =0;
+        let dir= 1; 
+        let spreadAmt = 100;
+
+        let dateProximity = 20
+
+        
+        if (data.length>0) rootY = dateScale(data[0].date_1)        
+
+        let circles = d3.select(groupRef.current)
           .selectAll('.smallcircle')
           .data(data)  
           .attr('class', 'smallcircle')
           .transition( )
-          //.duration(4000)
+          .duration(400)
           .attr('r', circleSmallSize)
-          .attr('cx', 0)
-          .attr('cy', (d, i) => {
-            let y = dateScale (d.date_1); //
-            //console.log ("line xy ", [0, y-rootY])
-            locs.current.push ({id: d.id, loc: [0, y-rootY]}); //([0, y-rootY])
-            return y - rootY;
-
-          })
+          .attr('cx',  (d, i) => setXYPos(d, i)[0])
+          .attr('cy',  (d, i) => setXYPos(d, i)[1]) 
           .attr ('fill', circleSmallFill)
-          // .call (updateSubLocs)
+          .attr('opacity', alpha.current)
+
+
+      // --  spread when rolled  -- // 
+      // Calculate XY pos of each circle by Date 
+      // and UPDATE current.locs... (!!)    
+      function setXYPos (d, i) { 
+          let x = 0;
+          let y = 0; 
+
+          offset = 0; // x offset -- 
+          //--  get previous item to find the date proximity 
+          if (i > 0 ) { 
+              // get date diff between this and previous item -- 
+              let datediff = d.date_1 - data[i-1].date_1;
+              if (datediff < dateProximity) { 
+                offset = spreadAmt * dir; 
+                dir *= -1; 
+              } 
+          }
+
+          if (hoverVal.current == true)  x=offset
+          y = (dateScale (d.date_1)) - rootY; //
+
+          // look for existing id elements in the list -- // 
+          let existingIDs = locs.current.filter (item => item.id == d.id)
+          if (existingIDs.length ==0) {
+            locs.current.push ({id: d.id, loc: [x, y]});
+          }
+          return [x, y]
+      }
+
 
       // -- update links -- // 
       let updatedLinks = [...animatedLinks];
 
-      //updateSubLocs (selection)
-      //console.log ('locs', locs)
       setSubLocState(locs.current)
+      //console.log ("locs current = ", locs.current);
 
 
-      // --- draw the links... // 
-      d3.select(groupRef.current)
+      // --- draw the links: for the date line view -- // 
+     let lines = d3.select(groupRef.current)
         .selectAll('.linksmall')
-        .data(links)
+        .data(mappedLinks.current)
         .attr('class', 'linksmall')
         .transition()
-        .duration(4000)
-        .attr('x1', 0)
-        .attr('y1', d => { 
-            // this locates them in number order = not a good way :( 
-            // get the date 
-            let sourceIndex = data.findIndex( i => i.id == d.source.id) ;// get (index, i)
-            const dateValue = data[sourceIndex]?.date_1;
-            //console.log ('date source val = ', dateValue)
-            //console.log ("... ", d, " D = " , data[sourceIndex].date_1)
-            return dateScale (dateValue) - rootY
-            //return sourceIndex +300 
-        })
-        .attr('x2', 0)
-        .attr('y2', d => { 
-             let targetIndex = data.findIndex( i => i.id == d.target.id)
-             const dateValue = data[targetIndex]?.date_1;
-             //console.log ('date targ val = ', dateValue)
-             return dateScale (dateValue) - rootY
-             //return targetIndex + 0;
-        })
+        .duration(400)
+        .attr('x1', d=> getSourceLocXY(d)[0]) // d => setXYPos(d)[0]) getSourceLoc)
+        .attr('y1', d=> getSourceLocXY(d)[1])
+        .attr('x2', d=> getTargetLocXY(d)[0])
+        .attr('y2', d=> getTargetLocXY(d)[1])
+        .attr('opacity', alpha.current)
+
+
+
+      // -- get XY values from locs.current..
+      function getSourceLocXY (d, i) { 
+            let sourceId = d.source.id; 
+            let sourceLoc = locs.current.find (d => d.id == sourceId);
+            //console.log ("id = ", sourceId, "  loc ", sourceLoc)
+            return [sourceLoc.loc[0], sourceLoc.loc[1]]
+      }
+
+      function getTargetLocXY (d, i) { 
+            let targetId = d.target.id; 
+            let targetLoc = locs.current.find (d => d.id == targetId);
+            return [targetLoc.loc[0], targetLoc.loc[1]]
+      }
 
 
   }
@@ -666,7 +840,7 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
       //console.log ("small circle data = ", selectedmakers)
       if (flowselected[0].map (m=>m.id).includes (d.id)) return 'red'
       if (flowselected[1].map (m=>m.id).includes (d.id)) return 'PowderBlue'
-      return 'lightgray' // darkGray' // PowderBlue' //
+      return 'gray'// 'lightgray' // darkGray' // PowderBlue' //
   }
 
   function circleSmallSize (d, i) { 
@@ -688,17 +862,25 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
   }
 
   // function for mouse over small circle
-  const handleMouseOverSmall = (id) => {
-      // Handle mouse over event for a specific bar
-        //console.log('Mouse over circle with ID:', id);
+  // const handleMouseOverSmall = (id) => {
+  //     // Handle mouse over event for a specific bar
+  //       //console.log('Mouse over circle with ID:', id);
 
-  };
+  // };
 
 
 
   return (
     // the main 'cluster'
-    <g transform={`translate(${0}, ${0}) scale(1)`} ref={groupRef} className="largecircleGrp">
+    <g 
+        transform={`translate(${0}, ${0}) scale(1)`} 
+        ref={groupRef} 
+        className="largecircleGrp"
+        onMouseOver={(event) => handleGroupRoll(id, data)}
+        onMouseOut ={(event) => handleGroupRollOut(id)} 
+        onClick    ={(event) => handleGroupClick(id)} >
+        {/*// */}
+
       <circle
         key={id}
         cx={0}
@@ -706,8 +888,8 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
         r={1}
         fill="darkGray" // PowderBlue"
         className ="largecircle" // this is the cluster circle.. large.. 
-        onMouseOver={() => handleMouseOver(id)}
-        onMouseOut ={() => handleMouseOut(id)}
+        // onMouseOver={(event) => handleGroupRoll(id)}
+        // onMouseOut ={(event) => handleGroupRollOut(id)}
 
 
       />
@@ -715,16 +897,47 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
       { data.map ((d, i) => {
             return <CircleSmall 
                       key={d.id} 
-                      id={d.id} 
-                      handleMouseOverSmall={handleMouseOverSmall} 
+                      id={d.id}
                       handleNodeRoll = {handleNodeRoll}
-                      handleMouseOut = {handleMouseOut}
+                      handleNodeRollOut = {handleNodeRollOut}
+                      // handleMouseOut = {handleMouseOut}
+                      // handleMouseOverSmall={handleMouseOverSmall} 
+
                    />
         }) }
 
       {
-        data.map((d, i) => { 
-            return<LinkSmall key={i} id={i} />
+        links.map((d, i) => { 
+            //console.log ("links added = ", d); 
+            // add a link for each 'type' of connections. 
+            // return<LinkSmall key={i} id={i} />
+            // ONE group... contains multiple links ... 
+
+            return (
+                <g className="linksmallGRP" key={i}>
+              
+                    { d.type.map ((d, n) => {
+                        //console.log ("type. ", n)
+                        //console.log ('key =', `${i}${n}`)
+                        let key = `${i}${n}`
+                        return  <line
+                                    key={key}
+                                    x1={0}
+                                    y1={0}
+                                    x2={5}
+                                    y2={5}
+                                    stroke="red"//PowderBlue"
+                                    strokeWidth={3}
+                                    opacity={.1}
+                                    className="linksmall"
+                                />
+
+                      }) 
+                    }
+
+  
+                </g>
+          );
         })
 
       }
@@ -735,27 +948,23 @@ const CircleLarge = ({id, data, flowselected,links, layout, dateScale, handleMou
 
 // ------------------------ // 
 
-const CircleSmall = ({id, handleMouseOverSmall, handleNodeRoll, handleMouseOut}) => {
+const CircleSmall = ({id, handleNodeRoll, handleNodeRollOut}) => {
  //let svgRef = useRef(null);
 
-
-
-
-  return (
+    return (
       // -- nested circle
       <circle
         key={id}
         cx={0}
         cy={0}
         r={0}  
-        //fill="orangered"
-        // opacity={0.8}
+        opacity={.1}
         className="smallcircle"
-        onMouseOver={(event) => handleNodeRoll(id, event)} ///handleMouseOverSmall(id)}
-        onMouseLeave={()  => handleMouseOut(id)}
+        onMouseOver={(event) => handleNodeRoll(id)} ///handleMouseOverSmall(id)}
+        onMouseOut= {(event) => handleNodeRollOut()}
 
 
-      />
+       />
     );
 };
 
@@ -763,35 +972,59 @@ const LinkSmall = ({id}) => {
  //let svgRef = useRef(null);
 
   return (
-      // -- link to 
+    <g className="linksmallGRP">
       <line
         key={id}
         x1={0}
         y1={0}
-        x2={0}
-        y2={0}
-        stroke="darkGray"//PowderBlue"
+        x2={5}
+        y2={5}
+        stroke="red"//PowderBlue"
         strokeWidth={3}
         opacity={1}
         className="linksmall"
       />
+    </g>
     );
 };
+
+// return LinkSmallGroup 
+
+const LinkSmallGroup = ( {id} )  => { 
+
+    return (
+
+      <line
+        key={id}
+        x1={0}
+        y1={0}
+        x2={5}
+        y2={5}
+        stroke="red"//PowderBlue"
+        strokeWidth={3}
+        opacity={1}
+        className="linksmallold"
+      />
+    )
+
+
+}
+
 
 const TimeLine = ({id}) => { 
 
     return (
       // -- link to 
 
-      <g>
-        <rect
+      <g className="timelineYAxis" >
+   {/*     <rect
           key={id}
           x={10}
           y={0}
           width={10}
           height={1000}
           className ="timeline" 
-        />
+        />*/}
 
       </g>
       

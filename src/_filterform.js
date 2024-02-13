@@ -1,13 +1,34 @@
 
 import React, { useState } from 'react';
-import { FormControl, InputLabel, Select, MenuItem, Button } from '@mui/material';
+
+// materialUI 
+import { FormControl, InputLabel, Select, MenuItem, Button, Icon, IconButton } from '@mui/material';
+import { grey } from '@mui/material/colors';
+import { blueGrey } from '@mui/material/colors';
+
+// icons materialUI 
+import DeleteIcon from '@mui/icons-material/Delete';
+
+// styles 
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import './styles.css'; // Import your custom CSS file
+
+// import SwitchCameraIcon from '@mui/icons-material/SwitchCamera';
 
 
 const FilterForm = ({ onFilterChange, onFilterReset, onFilterGroups, onAddRow}) => {
   const [selectedType, setSelectedType] = useState('guilds');
   const [selectedValue, setSelectedValue] = useState('_none');
   const [selectedRow, setSelectedRow] = useState('');
+
+
+  // const guitheme = createTheme({
+  //     palette: {
+  //       primary: { main: grey[200]},
+  //       secondary: {main: '#11cb5f'},
+  //     },
+  //   });
+
 
   const handleTypeChange = (event) => {
     setSelectedType(event.target.value);
@@ -26,70 +47,99 @@ const FilterForm = ({ onFilterChange, onFilterReset, onFilterGroups, onAddRow}) 
   };
 
   const handleGroupsClick = ( ) => { 
-    onFilterGroups(1, 20)
+    onFilterGroups(2, 100); // min - max
   }
 
   const handleAddRow = ( event) => { 
-    console.log ('add item', event.target.value)
+    //console.log ('add item', event.target.value)
     onAddRow(event.target.value )
   }
 
-  const butstyle = { 
-    padding: '1px', fontSize: '12px', height: '20px', width: '100px'
-  }
-
   return (
-    <div  className="dropdown-container">
-      <FormControl>
-        {/*<InputLabel>Type</InputLabel>*/}
-        <Select value={selectedType} className="dropdown-menu" onChange={handleTypeChange}
-         style={butstyle}>
-          <MenuItem value="guilds" className="menu-item">Guilds</MenuItem>
-          <MenuItem value="advertised_instruments"  className="menu-item">Ad Inst</MenuItem>
-          <MenuItem value="known_instruments"  className="menu-item">Known Instr</MenuItem>
 
-        </Select>
-      </FormControl>
+    <div>
+          <div  className="dropdown-container">
+      {/*      <ThemeProvider theme={guitheme}>*/}
+            <FormControl>
+              {/*<InputLabel>Type</InputLabel>
+                <Select value={selectedType} className="dropdown-menu" onChange={handleTypeChange}>
+                  <MenuItem value="guilds" className="menu-item">Guilds</MenuItem>
+                  <MenuItem value="advertised_instruments"  className="menu-item">Ad Inst</MenuItem>
+                  <MenuItem value="known_instruments"  className="menu-item">Known Instr</MenuItem>
+                </Select>
+            </FormControl>
 
-      <FormControl>
-        {/*<InputLabel>Value</InputLabel>*/}
-        <Select value={selectedValue} className="dropdown-menu" onChange={handleValueChange}
-         style={butstyle}>
-          <MenuItem value="_none"  className="menu-item">None</MenuItem>
-          <MenuItem value="Blacksmiths" className="menu-item">Blacksmiths</MenuItem>
-          <MenuItem value="Clockmakers" className="menu-item">Clockmakers</MenuItem>
-          <MenuItem value="Spectaclemakers" className="menu-item">Spectaclemakers</MenuItem>
-        </Select>
-      </FormControl>
+            <FormControl>
+              {/*<InputLabel>Value</InputLabel>*/}
 
-      <Button variant="contained" color="primary" className="formButton" onClick={handleFilterClick}
-      style={butstyle}>
-       Apply Filter
-      </Button>
-      <Button variant="contained" color="primary" className="formButton" onClick={handleResetClick}
-      style={butstyle}>
-       Undo Filter
-      </Button>
-      <Button variant="contained" color="primary" className="formButton" onClick={handleGroupsClick}
-        style={ { marginRight: '130px', marginLeft: '40px' , fontSize: '12px', height: '20px'} }>
-        Remove small groups
-      </Button>
 
-        <FormControl>
-        {/*<InputLabel>Value</InputLabel>*/}
-        <Select value={selectedRow} className="dropdown-menu" onChange={handleAddRow}>
-          <MenuItem value="" disabled>  Add Row Type</MenuItem>
-          <MenuItem value="towns" className="menu-item">Towns</MenuItem>
-          <MenuItem value="guilds" className="menu-item">Guilds</MenuItem>
-          <MenuItem value="advertised_instruments" className="menu-item">Advertised Instruments</MenuItem>
-          <MenuItem value="known_instruments" className="menu-item">Known Instruments</MenuItem>
+                <Select 
+                    value={selectedValue} 
+                    className="dropdown-menu" 
+                    onChange={handleValueChange}
+                  >
+                    <MenuItem value="_none"           className="menu-item">None</MenuItem>
+                    <MenuItem value="Blacksmiths"     className="menu-item">Blacksmiths</MenuItem>
+                    <MenuItem value="Clockmakers"     className="menu-item">Clockmakers</MenuItem>
+                    <MenuItem value="Spectaclemakers" className="menu-item">Spectaclemakers</MenuItem>
+                </Select>
+           
 
-        </Select>
-      </FormControl>
-    {/*   <Button variant="contained" color="primary" className="formButton" onClick={handleAddRow}
-        style={{ marginRight: '10px', marginLeft: '10px' }}>
-        + Row
-      </Button>*/}
+            </FormControl>
+
+              <Button 
+                  variant="outlined" 
+                  startIcon={<DeleteIcon/>}
+                  className="formButton" 
+                  onClick={handleFilterClick}
+                  >
+                   Filter
+              </Button>
+              <Button 
+                  variant="outlined" 
+                  color="primary" 
+                  className="formButton" 
+                  onClick={handleResetClick}
+                  >
+                  Undo Filter
+              </Button>
+              <Button 
+                  variant="outlined" 
+                  color="primary" 
+                  className="formButton" 
+                  onClick={handleGroupsClick}
+                  // style={{ marginLeft: '40px', marginRight: '130px' }}
+                  >
+                  Remove small groups
+              </Button>
+
+
+
+
+
+{/*
+              <FormControl>
+                  <Select 
+                    value={selectedRow} 
+                    className="dropdown-menu" 
+                    onChange={handleAddRow}
+                  >
+                    <MenuItem value="" disabled>  Add Row Type</MenuItem>
+                    <MenuItem value="towns" className="menu-item">Towns</MenuItem>
+                    <MenuItem value="guilds" className="menu-item">Guilds</MenuItem>
+                    <MenuItem value="advertised_instruments" className="menu-item">Advertised Instruments</MenuItem>
+                    <MenuItem value="known_instruments" className="menu-item">Known Instruments</MenuItem>
+                  </Select>
+             </FormControl>*/}
+
+          {/*   <Button variant="contained" color="primary" className="formButton" onClick={handleAddRow}
+              style={{ marginRight: '10px', marginLeft: '10px' }}>
+              + Row
+            </Button>*/}
+
+            {/*</ThemeProvider>*/}
+
+          </div>
     </div>
   );
 };

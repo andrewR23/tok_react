@@ -6,7 +6,7 @@ let blockH = 20;
 let delay = 500; // 3000; 
 let duration = 1300;
 
-const Paths = ({ data, index, handlePathRoll, handleRollOut}) => {
+const Paths = ({ data, rowsY, index, handlePathRoll, handleRollOut}) => {
   let svgRef = useRef(null);
   //let offsetRef = useRef (offsets)
 
@@ -15,10 +15,35 @@ const Paths = ({ data, index, handlePathRoll, handleRollOut}) => {
 
   let linkdata = [ ]
 
-  // -- generate links from data 
+  useEffect (()=> { 
+    //console.log ("path data is updated ")
+  }, [data])
+
+  // useEffect(() => { 
+  //       console.log ("update rows ", rowsY, " ", index)
+  //       console.log ("links ", links)
+  //       let linkstemp = [...links]
+
+  //       linkstemp.forEach (link => { 
+  //         link.source [1] = 0; 
+  //         link.target [1] = 4000; 
+  //       })
+  //       console.log ("linkstemp ", linkstemp)
+
+  //       //setLinks (linkstemp)
+  //      // drawPaths( )
+  //      //console.log ("update ypos = ", ypos ); // update ypos  -- 
+  //      // update links.. (but just ypos elements.. )
+  //      //let linkdataTemp = [...linkdata]
+
+
+  // }, [rowsY])
+
+  // -- generate links from data (& when rows are updated.. )
   useEffect(() => {     
         // --console.log ("1" , offsetRef.current)
-        //console.log ("path data " ,  data); 
+         //data.forEach (d => console.log ('d = ', d.sourceLoc))
+        //console.log ("path data " ,  data); // .map (d => { d.sourceLoc})); 
 
         // get the ROW that this path is from and to.. 
 
@@ -60,9 +85,9 @@ const Paths = ({ data, index, handlePathRoll, handleRollOut}) => {
           
           /// - the base x y pos for source and target -- 
           let sx = d.sourceLoc[0] + d.sourceLocSorted[d.sourceGrp_sorted]; 
-          let sy = d.sourceLoc[1] + blockH; 
+          let sy =  d.sourceLoc[1] + blockH - 0;  // ypos[0] + blockH; //
           let tx = d.targetLoc[0] + d.targetLocSorted[d.targetGrp_sorted]; 
-          let ty = d.targetLoc[1]; 
+          let ty = d.targetLoc[1]- 0 //ypos[1]; //
 
           let makerids = d.makers.map (d => d.id);  // map maker ids 
 
@@ -144,7 +169,11 @@ const Paths = ({ data, index, handlePathRoll, handleRollOut}) => {
           //let hasValue = vals.includes (blockVal)
 
           // -- create the object that will go 
-          const obj = { source : [sx+pathWidth/2, sy], target: [tx+pathWidth/2, ty], pathWidth:pathWidth, pathType:pathType, mainFlow: mainFlow }
+          let ystart = sy; 
+          let yend = ty; 
+          ystart = rowsY[index] ; //0 * (index+1)
+          yend = rowsY[index + 1]; //  * (index+1)
+          const obj = { source : [sx+pathWidth/2, ystart], target: [tx+pathWidth/2, yend], pathWidth:pathWidth, pathType:pathType, mainFlow: mainFlow }
 
           linkdata.push (obj)
         })
@@ -155,7 +184,7 @@ const Paths = ({ data, index, handlePathRoll, handleRollOut}) => {
 
         // console.log ("Result of offsets source =>  ", offset_tally_source )
         setLinks (linkdata)
-  }, [data])
+  }, [data, rowsY])
 
   // -draw paths when links are updated --
   useEffect( ()=> { 
@@ -167,7 +196,7 @@ const Paths = ({ data, index, handlePathRoll, handleRollOut}) => {
   }
 
   const drawPaths= () => { 
-
+    //console.log ("Links to draw ", links)
     let linkGen = d3.linkVertical();
    // links.sort((a, b) => b.pathType - a.pathType);// TRY and sort to be stacked in order. 
 
@@ -210,12 +239,13 @@ const Paths = ({ data, index, handlePathRoll, handleRollOut}) => {
           })
           .attr('opacity', (d, i) => { 
 
+            // -- SET THE OPACITY TO THE HEIGHT -- // 
             //console.log ('path vertical height ', d.target[1] - d.source[1])
             let verticalDist = d.target[1] - d.source[1];
 
-            let mainFlowAlpha1 =  verticalDist <=100 ? 0.0 : 0.7
-            let mainFlowAlpha2 = verticalDist <=100 ? 0.0 : 0.3
-            let secondFlowAlpha = verticalDist <=100 ? 0.0 : 0.4
+            let mainFlowAlpha1 =  verticalDist <=150 ? 0 :  0.7
+            let mainFlowAlpha2 = verticalDist  <=150 ? 0 :  0.3
+            let secondFlowAlpha = verticalDist <=150 ? 0 :  0.4
 
             return d.pathType === 0
                             ? d.mainFlow === true
