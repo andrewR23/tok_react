@@ -1461,7 +1461,7 @@ return (
                             >
                         <rect width="0%" height="0%" fill="darkgray" id="mainpage" />
 
-                            <g transform={`translate(${55}, ${70}) scale(${1})`}>
+                            <g transform={`translate(${55}, ${marginTop}) scale(${1})`}>
                                 <NavBar 
                                 data={rowsY}
                                 rowData={rowData}
