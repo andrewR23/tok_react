@@ -9,7 +9,7 @@ let duration = 1000; //  4000;
 
 let yHeight = 900; // the height of the date  
 
-import { linkTypes_grouped } from './_datatypes'
+import { linkTypes_grouped, linkColours } from './_datatypes'
 
 
 
@@ -63,7 +63,9 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
           setAnimatedNodes ([...nodes])
 
           let visibleGrps  = nodes.filter (d => d.nodes.length> 0);
-          setHozSpacing (frameW.current/visibleGrps.length)
+          //setHozSpacing (frameW.current/visibleGrps.length)
+
+          setHozSpacing (100) // an absolute value
           //console.log ("hoz spacing", hozSpacing)
           //setVisGrps (visibleGrps)
 
@@ -237,6 +239,8 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
                   let ypos = parseFloat (translateXY[2])
 
                   let x = setXPos(visCount, hozSpacing, i, xpos); // visCount * hozSpacing + 50; //  - 550 
+
+                  //x += 400
                   
                   // -- set y pos --  
                   let y =  d.nodes.length=== 0 ?  20000 : dateScaleRef.current (d.nodes[0].date_1); 
@@ -279,17 +283,19 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
         //console.log ("item = ", i, ' hoveredId ', hoveredId); 
         //let newx = 0;
         // get the xpos of the rolled item.. 
-
+        let hSpace = hozSpacing //*6
+        let startX = 350
         // -- if Nothing hovered -- 
-        if (hoveredId == null) return visCount * hozSpacing + 50; 
+        if (hoveredId == null) return visCount * hSpace + startX; // 50*10; //50
 
         // -- if item hovered -- // s
         if (i == hoveredId) return xpos; // if hovered- keep at current x pos -- // 
         if (i != hoveredId)  { 
             // if not hovered - recalculate.. 
             // get the distance from i to this... 
-            let spacing = 160; 
+            let spacing = hSpace //  160*1; 
             let newx = (i - hoveredId) * spacing + hoveredXY.current[0]
+            //return hoveredXY.current[0] // keep the same
             return newx; 
         }
 
@@ -340,7 +346,7 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
       }
 
       function drawTimeLine ( ) { 
-          let x = layout ==     'linear'  ?  -100 :  -800
+          let x = layout ==     'linear'  ?  200 :  -800
           let liney = layout == 'linear'  ?  0    :  10000
 
 
@@ -571,6 +577,11 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
                   opacity={0.4}
                   // hoverVal={hoveredId === i} // returns true or false... 
                   hoverID = {hoveredId}
+                  // onMouseOver={(event) => {
+                  //    event.target.style.cursor = 'pointer';
+                  //     //handleNodeRoll(id)
+
+                  // }}
 
               />
 
@@ -597,22 +608,26 @@ const CircleLarge = ({id, data, flowselected, links, layout, dateScale, hoverID,
   let [subLocState, setSubLocState] = useState([])
   let mappedLinks = useRef([ ])
 
+
   // -- set colour scale from linkedgroups data 
   let hoverVal = useRef (false)
   const alpha = useRef(1)
   const linkColorScale = useRef(
       d3.scaleOrdinal()
           .domain(Object.keys(linkTypes_grouped))
-          .range(['rgb(215,48,39)',
-                  'rgb(244,109,67)',
-                  'rgb(253,174,97)', 
-                  'rgb(254,224,144)',
-                  'rgb(255,255,191)',
-                  'rgb(224,243,248)',
-                  'rgb(171,217,233)',
-                  'rgb(116,173,209)',
-                  'rgb(69,117,180)'])
+          .range (linkColours)
+          // .range(['rgb(215,48,39)',
+          //         'rgb(244,109,67)',
+          //         'rgb(253,174,97)', 
+          //         'rgb(254,224,144)',
+          //         'rgb(255,255,191)',
+          //         'rgb(224,243,248)',
+          //         'rgb(171,217,233)',
+          //         'rgb(116,173,209)',
+          //         'rgb(69,117,180)'])
       );
+
+
   //console.log ('link colour scale ', linkColorScale.current.domain( ))
 
 
@@ -630,7 +645,7 @@ const CircleLarge = ({id, data, flowselected, links, layout, dateScale, hoverID,
 
       if (hoverID == null) { 
          hoverVal.current = false
-         alpha.current = 0.7; // default for all (nothing selected)
+         alpha.current = 1; // 0.7; // default for all (nothing selected)
 
       }
 
@@ -641,7 +656,7 @@ const CircleLarge = ({id, data, flowselected, links, layout, dateScale, hoverID,
 
       if (hoverID != null && hoverID != id) { 
           hoverVal.current = false
-          alpha.current = 0.2; // 
+          alpha.current = 0.09; // 
 
       }
 
@@ -672,12 +687,12 @@ const CircleLarge = ({id, data, flowselected, links, layout, dateScale, hoverID,
 
   // -- draw small groups by force
   function forceMoveSmall () {
-
+    const str = -160 ; // -60
       const simulation = d3
           .forceSimulation([...data])
           .force("x", d3.forceX(0))
           .force("y", d3.forceY(0))
-          .force("charge", d3.forceManyBody().strength(-60))
+          .force("charge", d3.forceManyBody().strength(str))
           .force("link", d3.forceLink(links))
           .stop( )
 
@@ -689,6 +704,8 @@ const CircleLarge = ({id, data, flowselected, links, layout, dateScale, hoverID,
 
       locs.current = [ ];
 
+      const timedelay = 1500
+
       // -- small circle 
       let circles = d3.select(groupRef.current)
           .selectAll('.smallcircle')
@@ -696,15 +713,32 @@ const CircleLarge = ({id, data, flowselected, links, layout, dateScale, hoverID,
           .attr('class', 'smallcircle')
           .transition()
           //.delay(3000)
-          .duration(3000)
+          .duration(timedelay)
           .attr('cx', ((d, i) => {
             locs.current.push ({id: d.id, loc: [d.x, d.y]}); 
             return d.x }))
           .attr('cy', ((d, i) => {
             return d.y }))
-          .attr('r', circleSmallSize)
+          // .attr('r', circleSmallSize)
           .attr('fill', circleSmallFill)
           .attr('opacity', alpha.current)
+
+
+      // -- draw text labels
+      let labels = d3.select(groupRef.current)
+          .selectAll('.smallLabelGroup')
+          .data(data)  
+          .attr('class', 'smallLabelGroup')
+          .transition()
+          .duration(timedelay)
+          .attr ('transform', (d,i) =>{ 
+            let x = d.x; 
+            let y = d.y
+            let rotate = -45
+            return `translate (${x}, ${y}) rotate (${rotate})`
+          })
+          .attr('opacity', d => hoverVal.current == true ? 1 : .1)
+          .attr('display', 'none')
 
       setSubLocState(locs.current)
 
@@ -715,15 +749,19 @@ const CircleLarge = ({id, data, flowselected, links, layout, dateScale, hoverID,
           .attr('class', 'linksmall')
           .transition()
           //.delay(3000)
-          .duration(3000)
+          .duration(timedelay)
           .attr('x1', (d => d.source.x))
           .attr('y1', (d => d.source.y))
           .attr('x2', (d => d.target.x))
           .attr('y2', (d => d.target.y))
           .attr('stroke', d => { 
-            //console.log ("d type = ", d.type); // use type for colour.. 
+            //return 'black'
+            console.log ("d type = ", d.type); // use type for colour.. 
             let col = 'black';
             let linkType = Object.entries(linkTypes_grouped).find(([group, types]) => types.includes(d.type))?.[0];
+            
+            console.log ("link type group = ", linkType)
+
             if (linkType) {
                col = linkColorScale.current(linkType);
             }
@@ -746,9 +784,14 @@ const CircleLarge = ({id, data, flowselected, links, layout, dateScale, hoverID,
         // --- // 
         let offset =0;
         let dir= 1; 
-        let spreadAmt = 100;
 
-        let dateProximity = 20
+       // let offsetlabel =0;
+      //  let labeldir = 1;
+       
+
+        const spreadAmt = 100;
+
+        const dateProximity = 20
 
         
         if (data.length>0) rootY = dateScale(data[0].date_1)        
@@ -759,12 +802,27 @@ const CircleLarge = ({id, data, flowselected, links, layout, dateScale, hoverID,
           .attr('class', 'smallcircle')
           .transition( )
           .duration(400)
-          .attr('r', circleSmallSize)
-          .attr('cx',  (d, i) => setXYPos(d, i)[0])
-          .attr('cy',  (d, i) => setXYPos(d, i)[1]) 
+          // .attr('r', circleSmallSize)
+          .attr('cx', (d, i) => setXYPos(d, i)[0])
+          .attr('cy', (d, i) => setXYPos(d, i)[1]) 
           .attr ('fill', circleSmallFill)
           .attr('opacity', alpha.current)
 
+
+        let labels = d3.select(groupRef.current)
+          .selectAll('.smallLabelGroup')
+          .data(data)  
+          .attr('class', 'smallLabelGroup')
+          .transition()
+          .duration(400)
+          .attr ('transform', (d,i) =>{ 
+            let [x, y] = setXYPos(d, i);
+            //console.log ({ x: x, y: y})
+            let rotate = -60
+            return `translate (${x}, ${y}) rotate (${rotate})`
+          })
+          .attr('opacity', d => hoverVal.current == true ? 1 : .1)
+          .attr('display', d => hoverVal.current == true ? 'block' : 'none')
 
       // --  spread when rolled  -- // 
       // Calculate XY pos of each circle by Date 
@@ -773,11 +831,13 @@ const CircleLarge = ({id, data, flowselected, links, layout, dateScale, hoverID,
           let x = 0;
           let y = 0; 
 
+
           offset = 0; // x offset -- 
           //--  get previous item to find the date proximity 
           if (i > 0 ) { 
               // get date diff between this and previous item -- 
               let datediff = d.date_1 - data[i-1].date_1;
+
               if (datediff < dateProximity) { 
                 offset = spreadAmt * dir; 
                 dir *= -1; 
@@ -795,6 +855,32 @@ const CircleLarge = ({id, data, flowselected, links, layout, dateScale, hoverID,
           return [x, y]
       }
 
+
+      // function setXYPosLabels (d, i) { 
+        //     let x = 0;
+        //     let y = 0; 
+        //     offsetlabel = 0; // x offset -- 
+        //     //--  get previous item to find the date proximity 
+        //     if (i > 0 ) { 
+        //         // get date diff between this and previous item -- 
+        //         let datediff = d.date_1 - data[i-1].date_1;
+
+        //        if (datediff < dateProximity) { 
+        //           offsetlabel = spreadAmt * labeldir; 
+        //           labeldir *= -1; 
+        //         } 
+        //     }
+
+        //     if (hoverVal.current == true)   x=offsetlabel
+        //     y = (dateScale (d.date_1)) - rootY; //
+
+        //     // look for existing id elements in the list -- // 
+        //     // let existingIDs = locs.current.filter (item => item.id == d.id)
+        //     // if (existingIDs.length ==0) {
+        //     //   locs.current.push ({id: d.id, loc: [x, y]});
+        //     // }
+        //     return [x, y]
+      // }
 
       // -- update links -- // 
       let updatedLinks = [...animatedLinks];
@@ -893,20 +979,8 @@ const CircleLarge = ({id, data, flowselected, links, layout, dateScale, hoverID,
 
 
       />
-        {/*create an array of small circles inside */}
-      { data.map ((d, i) => {
-            return <CircleSmall 
-                      key={d.id} 
-                      id={d.id}
-                      handleNodeRoll = {handleNodeRoll}
-                      handleNodeRollOut = {handleNodeRollOut}
-                      // handleMouseOut = {handleMouseOut}
-                      // handleMouseOverSmall={handleMouseOverSmall} 
 
-                   />
-        }) }
-
-      {
+       {
         links.map((d, i) => { 
             //console.log ("links added = ", d); 
             // add a link for each 'type' of connections. 
@@ -927,7 +1001,7 @@ const CircleLarge = ({id, data, flowselected, links, layout, dateScale, hoverID,
                                     x2={5}
                                     y2={5}
                                     stroke="red"//PowderBlue"
-                                    strokeWidth={3}
+                                    strokeWidth={1.5}
                                     opacity={.1}
                                     className="linksmall"
                                 />
@@ -941,6 +1015,33 @@ const CircleLarge = ({id, data, flowselected, links, layout, dateScale, hoverID,
         })
 
       }
+        {/*create an array of small circles inside */}
+      { data.map ((d, i) => {
+            return <CircleSmall 
+                      key={d.id} 
+                      id={d.id}
+                      handleNodeRoll = {handleNodeRoll}
+                      handleNodeRollOut = {handleNodeRollOut}
+                      // handleMouseOut = {handleMouseOut}
+                      // handleMouseOverSmall={handleMouseOverSmall} 
+
+                   />
+        }) }
+
+        { data.map ((d, i) => {
+            return <LabelSmall 
+                      key={d.id} 
+                      id={d.id}
+                      name = {d.name}
+                      // handleNodeRoll = {handleNodeRoll}
+                      // handleNodeRollOut = {handleNodeRollOut}
+                      // handleMouseOut = {handleMouseOut}
+                      // handleMouseOverSmall={handleMouseOverSmall} 
+
+                   />
+        }) }
+
+     
 
     </g>
     );
@@ -950,6 +1051,7 @@ const CircleLarge = ({id, data, flowselected, links, layout, dateScale, hoverID,
 
 const CircleSmall = ({id, handleNodeRoll, handleNodeRollOut}) => {
  //let svgRef = useRef(null);
+    const [r, setR] = useState(6);   // default size
 
     return (
       // -- nested circle
@@ -957,16 +1059,49 @@ const CircleSmall = ({id, handleNodeRoll, handleNodeRollOut}) => {
         key={id}
         cx={0}
         cy={0}
-        r={0}  
+        r={r}  
         opacity={.1}
         className="smallcircle"
-        onMouseOver={(event) => handleNodeRoll(id)} ///handleMouseOverSmall(id)}
-        onMouseOut= {(event) => handleNodeRollOut()}
+        onMouseOver={(event) => {
+          setR (14)
+            event.target.style.cursor = 'pointer';
+            handleNodeRoll(id)
+
+        }} 
+        onMouseOut={(event) => {
+          setR(6)
+            event.target.style.cursor = 'default';
+            handleNodeRollOut( )
+        }} 
+        // onMouseOver={(event) => handleNodeRoll(id)} ///handleMouseOverSmall(id)}
+        // onMouseOut= {(event) => handleNodeRollOut()}
 
 
        />
     );
 };
+
+const LabelSmall = ({ id, name}) => {
+  return (
+    <g
+      key={id}
+      className={'smallLabelGroup'}
+      transform={`translate(${0},${0}) rotate(${0})`}
+    >
+      <text
+        x={20}
+        y={0}
+        // textAnchor="start"
+        // alignmentBaseline="start"
+        fontSize={18}
+        fill="black"
+      >
+        {`${name}`}
+      </text>
+    </g>
+  );
+};
+
 
 const LinkSmall = ({id}) => {
  //let svgRef = useRef(null);

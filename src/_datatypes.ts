@@ -187,12 +187,25 @@ let linkTypes_grouped = {
           "_creditor_of"
       ],
 
-      undefined: [
+      misc: [
         "see_also",
         "associated_with"
       ]
 
 }
+
+let linkColours = [
+    "rgb(165,0,38)",
+    "rgb(215,48,39)",
+    "rgb(244,109,67)",
+    "rgb(253,174,97)",
+    "rgb(254,224,144)",
+    "rgb(255,255,191)",
+    "rgb(224,243,248)",
+    "rgb(171,217,233)",
+    "rgb(116,173,209)",
+    "rgb(69,117,180)"
+  ]
 
 
 
@@ -738,6 +751,7 @@ export {base_makers}  // base set of makers
 export {social_Clusters}
 export {rowsDataset} ;// sorted rows 
 export {linkTypes_grouped} ; // export  the group types 
+export {linkColours}
 
 
 

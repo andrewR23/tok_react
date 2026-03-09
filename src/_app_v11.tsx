@@ -1,3 +1,6 @@
+// @ts-nocheck
+
+
 "use client"
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
@@ -100,7 +103,7 @@ const App: React.FC = () => {
     const [queryString, setQueryString] = useState("<set query string>")
 
     // -- UI -- 
-    const [tooltip, setTooltip] = useState({ show:false, x:0, y:0, content:'...' });
+    const [tooltip, setTooltip] = useState({ show:false, x:100, y:100, content:'tooltip' });
 
     // -- row distances -- 
     const [rowsY, setRowsY] = useState ([0]); // an array to hold row postions... (to remove from row data)
@@ -108,7 +111,7 @@ const App: React.FC = () => {
     const [baseY, setBaseY] = useState(0)
     const [barSpace, setBarSpace] = useState(1500); // 900 the max distance between bars... //- change to min max
 
-    const socialScale = 0.5; // scale of social network
+    const socialScale = 0.7; // scale of social network  // 0.5 
     const barScale =  .3; 
 
     // -- a new test of row distances which will be used for bars and paths (links between bars) 
@@ -1041,16 +1044,19 @@ const App: React.FC = () => {
 
     }
     // --------- 
-    function handleNodeRoll (id:any ) { 
-        let event: MouseEvent | undefined; // Or initialize it properly
+    function handleNodeRoll (id ) { 
+        //console.log ("NODE ROLL", id)
+        // let event: MouseEvent | undefined; // Or initialize it properly
+        let maker  = returnmakefromid(id)
 
-        //console.log ("node roll ")
-        if (event) { 
-            const mouseX = event?.clientX ?? 0;
-            const mouseY = event.clientY + window.scrollY;
-            let maker  = returnmakefromid(id)
-            setTooltip({ show: true, x : mouseX+30, y: mouseY+10, content: `: ${maker[0].id}` });
-        }
+        //console.log ("maker = ", maker[0].)
+
+        const mouseX = event.clientX;
+        const mouseY = event.clientY + window.scrollY;
+        //console.log (name, ' :  ', val, ' ', mouseX)
+        setTooltip({ show: true, x : mouseX+30, y: mouseY+10, content: `${maker[0].name}` });
+
+  
 
     }
 
@@ -1496,7 +1502,7 @@ return (
                             {renderPathComponents()}
                             {renderBarComponents()}
                         </g>
-                        <g transform={`translate(${100}, ${dragY}) scale(${socialScale})`}>
+                        <g transform={`translate(${-100}, ${dragY}) scale(${socialScale})`}>
                             <SocialCluster 
                                 nodes={socialGroupsFilter} 
                                 layout={layout} 
