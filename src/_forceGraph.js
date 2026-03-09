@@ -18,6 +18,8 @@ const SocialCluster = ({ nodes, layout, baseY, flowselected, daterange, handleLo
       const dateScaleRef = useRef(d3.scaleLinear()); //.domain([1500, 1950]).range([0, 900]));
       const [animatedNodes, setAnimatedNodes] = useState([]); // this is the array of nodes to ref which gets updated 
 
+      // add a comment
+
       //const [visGrps, setVisGrps] = useState([]); 
       const [hozSpacing, setHozSpacing] = useState(0); 
       const hoveredXY = useRef([null])
